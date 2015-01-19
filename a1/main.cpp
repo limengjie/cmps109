@@ -13,6 +13,7 @@ using namespace std;
 #include "inode.h"
 #include "util.h"
 
+void init_root_dir(inode_state &);
 //
 // scan_options
 //    Options analysis:  The only option is -Dflags. 
@@ -54,12 +55,16 @@ int main (int argc, char** argv) {
    commands cmdmap;
    string prompt = "%";
    inode_state state;
+   init_root_dir(state);
+   cout << state << endl;
+
    try {
       for (;;) {
          try {
    
             // Read a line, break at EOF, and echo print the prompt
             // if one is needed.
+            prompt = state.get_prompt();
             cout << prompt << " ";
             string line;
             getline (cin, line);
@@ -90,3 +95,16 @@ int main (int argc, char** argv) {
    return exit_status_message();
 }
 
+void init_root_dir(inode_state & is) {
+   inode_ptr proot = (inode_ptr) new inode(DIR_INODE);
+   map<string, inode_ptr> m_root;
+   m_root["/"] = proot;
+   m_root["."] = proot;
+   m_root[".."] = proot;
+   directory_ptr dir_root_ptr = (directory_ptr) new directory;
+   dir_root_ptr->set_dir(m_root, "/");
+   proot->set_cts((file_base_ptr) dir_root_ptr);
+//todo: modify inode_state is
+   proot->set_cwd(is);
+   proot->set_root(is);
+}

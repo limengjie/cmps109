@@ -2,6 +2,8 @@
 
 #include "commands.h"
 #include "debug.h"
+//#include "inode.h"
+//#include "util.h"
 
 commands::commands(): map ({
    {"cat"   , fn_cat   },
@@ -28,7 +30,6 @@ command_fn commands::at (const string& cmd) {
    return result->second;
 }
 
-
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
@@ -42,6 +43,10 @@ void fn_cd (inode_state& state, const wordvec& words){
 void fn_echo (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   for(size_t i = 1; i < words.size(); i++)
+	std::cout << words.at(i) << " ";
+   std::cout << std::endl;
+   
 }
 
 void fn_exit (inode_state& state, const wordvec& words){
@@ -60,7 +65,6 @@ void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 }
 
-
 void fn_make (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
@@ -74,11 +78,14 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 void fn_prompt (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   state.set_prompt(words.at(1));
 }
 
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr pinode = state.get_cwd();
+   cout << pinode->get_dirname() << endl;
 }
 
 void fn_rm (inode_state& state, const wordvec& words){
