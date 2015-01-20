@@ -49,6 +49,8 @@ class inode_state {
       string get_prompt() const;
       inode_ptr get_cwd() const;
       inode_ptr get_root() const;
+      void set_cwd(inode_ptr);
+      void set_root(inode_ptr);
 };
 
 //
@@ -76,7 +78,7 @@ class inode {
    public:
       void inc_inode_nr();
       void set_cts(const file_base_ptr new_contents);
-      void set_cwd(inode_state & is);
+      //void set_cwd(inode_state & is);
 /* { cout << "call set cwd\n"; 
    is.cwd = (inode_ptr)this;
  }*/

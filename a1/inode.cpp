@@ -67,11 +67,13 @@ void inode::set_cts(const file_base_ptr new_contents) {
    contents = new_contents;
 }
 
-
+/*
 void inode::set_cwd(inode_state & is) {
    is.cwd = (inode_ptr)this;
    cout << "call set cwd\n";
+   cout << this << endl;
 }
+*/
 
 void inode::set_root(inode_state & is) {
    is.root = (inode_ptr)this;
@@ -187,8 +189,16 @@ inode_ptr inode_state::get_cwd() const {
    return cwd ;
 }
 
+void inode_state::set_cwd(inode_ptr p_inode) {
+   cwd = p_inode;
+}
+
 inode_ptr inode_state::get_root() const {
    return root;
+}
+
+void inode_state::set_root(inode_ptr p_inode) {
+   root = p_inode;
 }
 
 ostream& operator<< (ostream& out, const inode_state& state) {

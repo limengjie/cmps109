@@ -105,6 +105,8 @@ void init_root_dir(inode_state & is) {
    dir_root_ptr->set_dir(m_root, "/");
    proot->set_cts((file_base_ptr) dir_root_ptr);
 //todo: modify inode_state is
-   proot->set_cwd(is);
-   proot->set_root(is);
+   //proot->set_cwd(is);
+   //proot->set_root(is);
+   is.set_cwd(proot);
+   is.set_root(proot);
 }

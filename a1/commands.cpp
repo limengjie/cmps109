@@ -58,7 +58,8 @@ void fn_cd (inode_state& state, const wordvec& words){
    directory_ptr pdir = pinode->get_dir_ptr(); 
    if (words.size() == 1) {
 	inode_ptr proot = state.get_root();
-	proot->set_cwd(state);
+	//proot->set_cwd(state);
+	state.set_cwd(proot);
    }	
    else if (words.size() == 2) {
 	string dirname = words.at(1);
@@ -67,7 +68,8 @@ void fn_cd (inode_state& state, const wordvec& words){
 	cout << dirname << endl;
 	it = dir_map.find(dirname);
 	if (it != dir_map.end() && ((it->second)->get_type()) == DIR_INODE) {
-		(it->second)->set_cwd(state);	
+		//(it->second)->set_cwd(state);	
+		state.set_cwd(it->second);
 	}
 	else 
 		cout << "cd: " << dirname << ": No such directory.\n";
