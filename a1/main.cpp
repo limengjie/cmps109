@@ -98,7 +98,7 @@ int main (int argc, char** argv) {
 void init_root_dir(inode_state & is) {
    inode_ptr proot = (inode_ptr) new inode(DIR_INODE);
    map<string, inode_ptr> m_root;
-   m_root["/"] = proot;
+//   m_root["/"] = proot;
    m_root["."] = proot;
    m_root[".."] = proot;
    directory_ptr dir_root_ptr = (directory_ptr) new directory;

@@ -73,14 +73,17 @@ class inode {
       inode_t type;
       file_base_ptr contents;
    public:
+      void inc_inode_nr();
       void set_cts(const file_base_ptr new_contents);
       void set_cwd(inode_state & is) { is.cwd = (inode_ptr)this; }
       void set_root(inode_state & is) { is.root = (inode_ptr)this; }
       inode (inode_t init_type);
       int get_inode_nr() const;
       file_base_ptr get_cts() const; 
-      string get_dirname();
-      
+      directory_ptr get_dir_ptr() const;
+      plain_file_ptr get_file_ptr() const;
+      void show_inode();
+      //string get_dirname();
 };
 
 //
@@ -122,10 +125,13 @@ class file_base {
 class plain_file: public file_base {
    private:
       wordvec data;
+      string name;
    public:
+      void set_filename(const string & filename);
       size_t size() const override;
       const wordvec& readfile() const;
       void writefile (const wordvec& newdata);
+      string get_name() const;
 };
 
 //
@@ -158,9 +164,11 @@ class directory: public file_base {
       size_t size() const override;
       void remove (const string& filename);
       inode& mkdir (const string& dirname);
-      inode& mkfile (const string& filename);
+      inode_ptr mkfile (const string& filename);
       string get_name() const;
-      //const string & getdirname() { return dirents.begin(); }
+      map<string, inode_ptr> get_dir_map() const;
+      void show_dir();
+      //string get_key(const map<string, inode_ptr>::iterator & it) const;
 };
 
 #endif
