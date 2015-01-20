@@ -48,6 +48,7 @@ class inode_state {
       void set_prompt(const string&);
       string get_prompt() const;
       inode_ptr get_cwd() const;
+      inode_ptr get_root() const;
 };
 
 //
@@ -75,15 +76,17 @@ class inode {
    public:
       void inc_inode_nr();
       void set_cts(const file_base_ptr new_contents);
-      void set_cwd(inode_state & is) { is.cwd = (inode_ptr)this; }
-      void set_root(inode_state & is) { is.root = (inode_ptr)this; }
+      void set_cwd(inode_state & is);
+/* { cout << "call set cwd\n"; 
+   is.cwd = (inode_ptr)this;
+ }*/
+      void set_root(inode_state & is);// { is.root = (inode_ptr)this; }
       inode (inode_t init_type);
       int get_inode_nr() const;
       file_base_ptr get_cts() const; 
       directory_ptr get_dir_ptr() const;
       plain_file_ptr get_file_ptr() const;
-      void show_inode();
-      //string get_dirname();
+      inode_t get_type() const;
 };
 
 //
@@ -161,14 +164,13 @@ class directory: public file_base {
       string name;
    public:
       void set_dir(const map<string, inode_ptr> root_map, const string & dirname);
+      void set_dir(const string & dirname);
       size_t size() const override;
       void remove (const string& filename);
-      inode& mkdir (const string& dirname);
+      inode_ptr mkdir (const string& dirname);
       inode_ptr mkfile (const string& filename);
       string get_name() const;
       map<string, inode_ptr> get_dir_map() const;
-      void show_dir();
-      //string get_key(const map<string, inode_ptr>::iterator & it) const;
 };
 
 #endif

@@ -41,6 +41,10 @@ string inode::get_dirname() {
 }
 */
 
+inode_t inode::get_type() const {
+   return type;
+}
+
 void inode::inc_inode_nr() {
    ++inode_nr;
 }
@@ -63,21 +67,16 @@ void inode::set_cts(const file_base_ptr new_contents) {
    contents = new_contents;
 }
 
-/*
-void inode::show_inode() {
-	cout << "inode_nr = " << inode_nr << endl;
-	cout << "contents = "<< contents << endl;
-}*/
 
-/*
-void inode::setcwd(inode_state & is) {
-   is.cwd = dirents.["."];
+void inode::set_cwd(inode_state & is) {
+   is.cwd = (inode_ptr)this;
+   cout << "call set cwd\n";
 }
 
-void inode::setroot(inode_state & is) {
-   is.root = dirents.["."];
+void inode::set_root(inode_state & is) {
+   is.root = (inode_ptr)this;
 }
-*/
+
 
 plain_file_ptr plain_file_ptr_of (file_base_ptr ptr) {
    plain_file_ptr pfptr = dynamic_pointer_cast<plain_file> (ptr);
@@ -94,7 +93,7 @@ directory_ptr directory_ptr_of (file_base_ptr ptr) {
 size_t plain_file::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
-   //size = data.size();
+   size = data.size();
    return size;
 }
 
@@ -107,7 +106,7 @@ void plain_file::writefile (const wordvec& words) {
    DEBUGF ('i', words);
    for(size_t i = 0; i < words.size(); i++) {
 	data.push_back(words.at(i));
-	cout << "write to data "<< words.at(i) << endl;
+//	cout << "write to data "<< words.at(i) << endl;
    }
 }
 
@@ -121,6 +120,10 @@ string plain_file::get_name() const {
 
 void directory::set_dir(const map<string, inode_ptr> root_map, const string & dirname) {
    dirents = root_map;
+   name = dirname;
+}
+
+void directory::set_dir(const string & dirname) {
    name = dirname;
 }
 
@@ -143,28 +146,26 @@ void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
 }
 
-/*
-inode & directory::mkdir (const string & dirname) {
-   map <string, inode_ptr> m;
-   m[dirname] = new inode (DIR_INODE);
-*/
+inode_ptr directory::mkdir (const string & dirname) {
+   inode_ptr pinode = (inode_ptr) new inode(DIR_INODE);
+   directory_ptr pdir = (directory_ptr) new directory;
+   pinode->set_cts(pdir);
+   map<string, inode_ptr> dir_map;
+   dir_map["."] = pinode;
+   pdir->set_dir(dir_map, dirname);
+
+   return pinode;
+}
 
 inode_ptr  directory::mkfile (const string & filename) {
    plain_file_ptr pfile = (plain_file_ptr) new plain_file;
    pfile->set_filename(filename);
    inode_ptr pinode = (inode_ptr) new inode(PLAIN_INODE);
    pinode->set_cts(pfile); 
-   cout << "inode_nr= " << pinode->get_inode_nr() << endl;
+   //cout << "inode_nr= " << pinode->get_inode_nr() << endl;
    
    return pinode;
 }
-
-/*
-void show_dir() {
-	cout << "dir " << name << endl;
-	for(map<string, inode_ptr>::iterator it = dirents.begin(); it != dirents.end(); ++it)
-		cout << "key= "<< it->first << "val= "<< it->second << endl;
-}*/
 
 inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
@@ -184,6 +185,10 @@ string inode_state::get_prompt() const {
 
 inode_ptr inode_state::get_cwd() const {
    return cwd ;
+}
+
+inode_ptr inode_state::get_root() const {
+   return root;
 }
 
 ostream& operator<< (ostream& out, const inode_state& state) {
