@@ -55,7 +55,7 @@ int main (int argc, char** argv) {
    string prompt = "%";
    inode_state state;
    init_root_dir(state);
-   cout << state << endl;
+   //cout << state << endl;
 
    try {
       for (;;) {

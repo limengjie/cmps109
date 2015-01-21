@@ -173,7 +173,8 @@ class directory: public file_base {
       map<string,inode_ptr> dirents;
       string name;
    public:
-      void set_dir(const map<string, inode_ptr> root_map, const string & dirname);
+      void set_dir(const map<string, 
+      inode_ptr> root_map, const string & dirname);
       void set_dir(const string & dirname);
       size_t size() const override;
       void remove (const string& filename);
