@@ -60,17 +60,14 @@ void fn_cd (inode_state& state, const wordvec& words){
    directory_ptr pdir = pinode->get_dir_ptr(); 
    if (words.size() == 1) {
 	inode_ptr proot = state.get_root();
-	//proot->set_cwd(state);
 	state.set_cwd(proot);
    }	
    else if (words.size() == 2) {
 	string dirname = words.at(1);
    	map<string, inode_ptr> dir_map = pdir->get_dir_map();
         map<string, inode_ptr>::iterator it;
-	cout << dirname << endl;
 	it = dir_map.find(dirname);
 	if (it != dir_map.end() && ((it->second)->get_type()) == DIR_INODE) {
-		//(it->second)->set_cwd(state);	
 		state.set_cwd(it->second);
 	}
 	else 
@@ -136,8 +133,10 @@ void fn_lsr (inode_state& state, const wordvec& words){
    else if (words.size() == 2) 
 	dirname = words.at(1);
    size_t start = getStartPtr(state, dirname);
-   for(size_t i = start; i < state.get_qsize(); i++)
+   for(size_t i = start; i < state.get_qsize(); i++) {
+//	cout << state.get_qpair(i).first << endl;
 	ls(state.get_qpair(i).second);	
+   }
 }
 
 void fn_make (inode_state& state, const wordvec& words){
@@ -210,8 +209,6 @@ void fn_rm (inode_state& state, const wordvec& words){
    }
    else
 	cout << "No such file " << target << endl;
-   cout << "show queue: \n";
-   state.show_q();
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
@@ -241,6 +238,7 @@ int exit_status_message() {
 void ls(inode_ptr pinode) {
    directory_ptr pdir = pinode->get_dir_ptr(); 
    map<string, inode_ptr> dir_map = pdir->get_dir_map();
+   cout << pdir->get_name() << ":\n";
    for(map<string, inode_ptr>::iterator iter = dir_map.begin(); iter != dir_map.end(); ++iter) {
 	inode_ptr p_inode = (iter->second);
 	cout << "\t" << (p_inode->get_inode_nr()) << "\t";
@@ -255,8 +253,7 @@ void ls(inode_ptr pinode) {
 		size_t file_size = (file_ptr->size());
 		cout << file_size;
 	}
-	cout << " " << (iter->first) ;//<< endl; 
-	cout << "\t addr = " << p_inode << endl;
+	cout << " " << (iter->first) << endl; 
    } //endfor
 }
 

@@ -17,11 +17,11 @@ inode::inode(inode_t init_type):
    switch (type) {
       case PLAIN_INODE:
            contents = make_shared<plain_file>();
-	   cout << "create a file\n";
+	   //cout << "create a file\n";
            break;
       case DIR_INODE:
            contents = make_shared<directory>();
-           cout << "create a dir\n";
+           //cout << "create a dir\n";
            break;
    }
    DEBUGF ('i', "inode " << inode_nr << ", type = " << type);
@@ -92,7 +92,9 @@ directory_ptr directory_ptr_of (file_base_ptr ptr) {
 size_t plain_file::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
-   size = data.size();
+   for(size_t i = 0; i < data.size(); i++)
+	size += data.at(i).length();
+   size += data.size() - 1;
    return size;
 }
 
@@ -208,7 +210,7 @@ void inode_state::add_q(string newdir, string parentdir,  inode_ptr pinode) {
    		break;
    }
    inode_q.insert(inode_q.begin() + pos, pair_inode);
-   cout << "add " << newdir << "to "<< parentdir << endl;
+   //cout << "add " << newdir << "to "<< parentdir << endl;
 }
 
 void inode_state::add_q(string dirname, inode_ptr pinode) {
