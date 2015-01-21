@@ -26,6 +26,9 @@ using command_map = map<string,command_fn>;
 //    Given a string, returns a command_fn associated with it,
 //    or 0 if not found.
 //
+void ls(inode_ptr);
+
+size_t getStartPtr(inode_state &, string);
 
 class commands {
    private:

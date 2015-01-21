@@ -19,6 +19,8 @@ commands::commands(): map ({
    {"rm"    , fn_rm    },
 }){}
 
+void ls(inode_ptr, directory_ptr);
+
 command_fn commands::at (const string& cmd) {
    // Note: value_type is pair<const key_type, mapped_type>
    // So: iterator->first is key_type (string)
@@ -97,8 +99,9 @@ void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    inode_ptr pinode = state.get_cwd();
+   ls(pinode);
+/*
    directory_ptr pdir = pinode->get_dir_ptr(); 
-   cout << pdir->get_name() << ":\n";
    map<string, inode_ptr> dir_map = pdir->get_dir_map();
    for(map<string, inode_ptr>::iterator iter = dir_map.begin(); iter != dir_map.end(); ++iter) {
 	inode_ptr p_inode = (iter->second);
@@ -117,11 +120,24 @@ void fn_ls (inode_state& state, const wordvec& words){
 	cout << " " << (iter->first) ;//<< endl; 
 	cout << "\t addr = " << p_inode << endl;
    } //endfor
+*/
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr pinode;
+   string dirname;
+   if (words.size() == 1) {
+	pinode = state.get_cwd();
+   	directory_ptr pdir = pinode->get_dir_ptr();
+	dirname = pdir->get_name();	
+   }
+   else if (words.size() == 2) 
+	dirname = words.at(1);
+   size_t start = getStartPtr(state, dirname);
+   for(size_t i = start; i < state.get_qsize(); i++)
+	ls(state.get_qpair(i).second);	
 }
 
 void fn_make (inode_state& state, const wordvec& words){
@@ -149,20 +165,15 @@ void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    if (words.size() == 2) {
-	cout <<"1\n";
    	inode_ptr pinode = state.get_cwd();
-	cout << "c addr "<< pinode;
-	cout <<"2\n";
    	directory_ptr pdir = pinode->get_dir_ptr();
-	cout <<"3\n";
 	inode_ptr pnew_inode = pdir->mkdir(words.at(1));
-	cout <<"4\n";
    	directory_ptr pnew_dir = pnew_inode->get_dir_ptr();
-	cout <<"5\n";
    	string new_dirname = pnew_dir->get_name();
    	map<string, inode_ptr> dir_map = pdir->get_dir_map();
    	dir_map[new_dirname] = pnew_inode;
    	pdir->set_dir(dir_map, pdir->get_name()); //update cwdirectory
+	state.add_q(new_dirname, pdir->get_name(), pnew_inode);
    	map<string, inode_ptr> dir_map_new = pnew_dir->get_dir_map();
 	dir_map_new[".."] = pinode;
 	pnew_dir->set_dir(dir_map_new, new_dirname);
@@ -180,7 +191,6 @@ void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
    inode_ptr pinode = state.get_cwd();
    directory_ptr pdir = pinode->get_dir_ptr();
-   cout << "inode addr= " << pinode;
    cout << pdir->get_name() << endl;
 }
 
@@ -196,9 +206,12 @@ void fn_rm (inode_state& state, const wordvec& words){
    if (it != dir_map.end() ) {
 	dir_map.erase(it);
    	pdir->set_dir(dir_map, pdir->get_name()); //update cwdirectory
+   	state.erase_q(target);
    }
    else
 	cout << "No such file " << target << endl;
+   cout << "show queue: \n";
+   state.show_q();
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
@@ -213,6 +226,7 @@ void fn_rmr (inode_state& state, const wordvec& words){
    if (it != dir_map.end() ) {
 	dir_map.erase(it);
    	pdir->set_dir(dir_map, pdir->get_name()); //update cwdirectory
+   	state.erase_q(target);
    }
    else
 	cout << "No such file " << target << endl;
@@ -224,3 +238,32 @@ int exit_status_message() {
    return exit_status;
 }
 
+void ls(inode_ptr pinode) {
+   directory_ptr pdir = pinode->get_dir_ptr(); 
+   map<string, inode_ptr> dir_map = pdir->get_dir_map();
+   for(map<string, inode_ptr>::iterator iter = dir_map.begin(); iter != dir_map.end(); ++iter) {
+	inode_ptr p_inode = (iter->second);
+	cout << "\t" << (p_inode->get_inode_nr()) << "\t";
+	inode_t type = (p_inode->get_type());
+	if (type == DIR_INODE) {
+		directory_ptr dir_ptr = p_inode->get_dir_ptr();
+		size_t dir_size = dir_ptr->size();
+		cout << dir_size;
+	}
+	else if (type == PLAIN_INODE) {
+		plain_file_ptr file_ptr = (p_inode->get_file_ptr());
+		size_t file_size = (file_ptr->size());
+		cout << file_size;
+	}
+	cout << " " << (iter->first) ;//<< endl; 
+	cout << "\t addr = " << p_inode << endl;
+   } //endfor
+}
+
+size_t getStartPtr(inode_state & state, string dirname) {
+   size_t pos;
+   for(pos = 0; pos < state.get_qsize(); pos++) 
+	if (state.get_qpair(pos).first == dirname)
+		break;
+   return pos;
+}

@@ -43,6 +43,7 @@ class inode_state {
       inode_ptr root {nullptr};
       inode_ptr cwd {nullptr};
       string prompt {"% "};
+      vector<pair<string, inode_ptr> > inode_q;
    public:
       inode_state();
       void set_prompt(const string&);
@@ -51,6 +52,12 @@ class inode_state {
       inode_ptr get_root() const;
       void set_cwd(inode_ptr);
       void set_root(inode_ptr);
+      void add_q(string, string, inode_ptr);
+      void add_q(string, inode_ptr);
+      void erase_q(string);
+      size_t get_qsize();
+      pair<string, inode_ptr> get_qpair(size_t);
+      void show_q();
 };
 
 //
@@ -89,6 +96,7 @@ class inode {
       directory_ptr get_dir_ptr() const;
       plain_file_ptr get_file_ptr() const;
       inode_t get_type() const;
+      void ls();
 };
 
 //

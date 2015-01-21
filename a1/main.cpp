@@ -39,7 +39,6 @@ void scan_options (int argc, char** argv) {
    }
 }
 
-
 //
 // main -
 //    Main program which loops reading commands until end of file.
@@ -98,15 +97,12 @@ int main (int argc, char** argv) {
 void init_root_dir(inode_state & is) {
    inode_ptr proot = (inode_ptr) new inode(DIR_INODE);
    map<string, inode_ptr> m_root;
-//   m_root["/"] = proot;
    m_root["."] = proot;
    m_root[".."] = proot;
    directory_ptr dir_root_ptr = (directory_ptr) new directory;
    dir_root_ptr->set_dir(m_root, "/");
    proot->set_cts((file_base_ptr) dir_root_ptr);
-//todo: modify inode_state is
-   //proot->set_cwd(is);
-   //proot->set_root(is);
    is.set_cwd(proot);
    is.set_root(proot);
+   is.add_q("/", proot);
 }

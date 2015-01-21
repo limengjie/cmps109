@@ -67,13 +67,10 @@ void inode::set_cts(const file_base_ptr new_contents) {
    contents = new_contents;
 }
 
-/*
-void inode::set_cwd(inode_state & is) {
-   is.cwd = (inode_ptr)this;
-   cout << "call set cwd\n";
-   cout << this << endl;
+void inode::ls() {
+   
 }
-*/
+
 
 void inode::set_root(inode_state & is) {
    is.root = (inode_ptr)this;
@@ -201,6 +198,49 @@ void inode_state::set_root(inode_ptr p_inode) {
    root = p_inode;
 }
 
+void inode_state::add_q(string newdir, string parentdir,  inode_ptr pinode) {
+   pair<string, inode_ptr> pair_inode;
+   pair_inode = make_pair(newdir, pinode);
+   size_t pos;
+   for(pos = 0; pos < inode_q.size(); pos++) 
+	if ((inode_q.at(pos).first) == parentdir) {
+		pos++;
+   		break;
+   }
+   inode_q.insert(inode_q.begin() + pos, pair_inode);
+   cout << "add " << newdir << "to "<< parentdir << endl;
+}
+
+void inode_state::add_q(string dirname, inode_ptr pinode) {
+   pair<string, inode_ptr> pair_inode;
+   pair_inode = make_pair(dirname, pinode);
+   inode_q.push_back(pair_inode);
+}
+   
+
+void inode_state::erase_q(string dirname) {
+   for(size_t i = 0; i < inode_q.size(); i++) {
+	if (inode_q.at(i).first == dirname) {
+		inode_q.erase(inode_q.begin() + i);
+		break;
+	}
+   }
+}
+
+void inode_state::show_q() {
+   for(size_t i = 0; i < inode_q.size(); i++) 
+	cout << inode_q.at(i).first << "\t";
+   cout << endl;
+}
+
+size_t inode_state::get_qsize() {
+   return inode_q.size();
+}
+
+pair<string, inode_ptr> inode_state::get_qpair(size_t num) {
+   return inode_q.at(num);
+}
+   
 ostream& operator<< (ostream& out, const inode_state& state) {
    out << "inode_state: root = " << state.root
        << ", cwd = " << state.cwd << ", prompt = " 
