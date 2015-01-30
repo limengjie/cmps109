@@ -17,11 +17,9 @@ inode::inode(inode_t init_type):
    switch (type) {
       case PLAIN_INODE:
            contents = make_shared<plain_file>();
-	   //cout << "create a file\n";
            break;
       case DIR_INODE:
            contents = make_shared<directory>();
-           //cout << "create a dir\n";
            break;
    }
    DEBUGF ('i', "inode " << inode_nr << ", type = " << type);
@@ -32,14 +30,6 @@ int inode::get_inode_nr() const {
    DEBUGF ('i', "inode = " << inode_nr);
    return inode_nr;
 }
-
-/*
-string inode::get_dirname() {
-   directory_ptr pdir = directory_ptr_of(contents);
-   string dirname = pdir->get_name();
-   return dirname;
-}
-*/
 
 inode_t inode::get_type() const {
    return type;
@@ -93,7 +83,7 @@ size_t plain_file::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
    for(size_t i = 0; i < data.size(); i++)
-	size += data.at(i).length();
+      size += data.at(i).length();
    size += data.size() - 1;
    return size;
 }
@@ -106,8 +96,7 @@ const wordvec& plain_file::readfile() const {
 void plain_file::writefile (const wordvec& words) {
    DEBUGF ('i', words);
    for(size_t i = 0; i < words.size(); i++) {
-	data.push_back(words.at(i));
-//	cout << "write to data "<< words.at(i) << endl;
+      data.push_back(words.at(i));
    }
 }
 
@@ -119,7 +108,9 @@ string plain_file::get_name() const {
    return name;
 }
 
-void directory::set_dir(const map<string, inode_ptr> root_map, const string & dirname) {
+void directory::set_dir(const map<string, 
+                        inode_ptr> root_map, 
+                        const string & dirname) {
    dirents = root_map;
    name = dirname;
 }
@@ -163,7 +154,6 @@ inode_ptr  directory::mkfile (const string & filename) {
    pfile->set_filename(filename);
    inode_ptr pinode = (inode_ptr) new inode(PLAIN_INODE);
    pinode->set_cts(pfile); 
-   //cout << "inode_nr= " << pinode->get_inode_nr() << endl;
    
    return pinode;
 }
@@ -200,17 +190,18 @@ void inode_state::set_root(inode_ptr p_inode) {
    root = p_inode;
 }
 
-void inode_state::add_q(string newdir, string parentdir,  inode_ptr pinode) {
+void inode_state::add_q(string newdir, 
+                        string parentdir,  
+                        inode_ptr pinode) {
    pair<string, inode_ptr> pair_inode;
    pair_inode = make_pair(newdir, pinode);
    size_t pos;
    for(pos = 0; pos < inode_q.size(); pos++) 
-	if ((inode_q.at(pos).first) == parentdir) {
-		pos++;
-   		break;
+      if ((inode_q.at(pos).first) == parentdir) {
+         pos++;
+         break;
    }
    inode_q.insert(inode_q.begin() + pos, pair_inode);
-   //cout << "add " << newdir << "to "<< parentdir << endl;
 }
 
 void inode_state::add_q(string dirname, inode_ptr pinode) {
@@ -222,16 +213,16 @@ void inode_state::add_q(string dirname, inode_ptr pinode) {
 
 void inode_state::erase_q(string dirname) {
    for(size_t i = 0; i < inode_q.size(); i++) {
-	if (inode_q.at(i).first == dirname) {
-		inode_q.erase(inode_q.begin() + i);
-		break;
-	}
+      if (inode_q.at(i).first == dirname) {
+         inode_q.erase(inode_q.begin() + i);
+         break;
+      }
    }
 }
 
 void inode_state::show_q() {
    for(size_t i = 0; i < inode_q.size(); i++) 
-	cout << inode_q.at(i).first << "\t";
+      cout << inode_q.at(i).first << "\t";
    cout << endl;
 }
 

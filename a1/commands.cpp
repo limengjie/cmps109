@@ -46,8 +46,8 @@ void fn_cat (inode_state& state, const wordvec& words){
       else {
          inode_ptr pch_inode = it->second;
          plain_file_ptr pfile = pch_inode->get_file_ptr();
-	 for(size_t i = 0; i < pfile->readfile().size(); i++)
-	    cout << pfile->readfile().at(i) << " ";
+         for(size_t i = 0; i < pfile->readfile().size(); i++)
+         cout << pfile->readfile().at(i) << " ";
          cout << endl;
       }
    }		
@@ -69,7 +69,7 @@ void fn_cd (inode_state& state, const wordvec& words){
       it = dir_map.find(dirname);
       if (it != dir_map.end() && 
          ((it->second)->get_type()) == DIR_INODE) {
-	    state.set_cwd(it->second);
+         state.set_cwd(it->second);
       }
       else { 
          cout << "cd: " << dirname;
@@ -108,12 +108,12 @@ void fn_lsr (inode_state& state, const wordvec& words){
    inode_ptr pinode;
    string dirname;
    if (words.size() == 1) {
-	pinode = state.get_cwd();
-   	directory_ptr pdir = pinode->get_dir_ptr();
-	dirname = pdir->get_name();	
+      pinode = state.get_cwd();
+      directory_ptr pdir = pinode->get_dir_ptr();
+      dirname = pdir->get_name();	
    }
    else if (words.size() == 2) 
-	dirname = words.at(1);
+      dirname = words.at(1);
    size_t start = getStartPtr(state, dirname);
    for(size_t i = start; i < state.get_qsize(); i++) {
       ls(state.get_qpair(i).second);	
@@ -235,8 +235,8 @@ void ls(inode_ptr pinode) {
       }
       else if (type == PLAIN_INODE) {
          plain_file_ptr file_ptr = (p_inode->get_file_ptr());
-	 size_t file_size = (file_ptr->size());
-	 cout << file_size;
+         size_t file_size = (file_ptr->size());
+         cout << file_size;
       }
       cout << " " << (iter->first) << endl; 
    } //endfor
