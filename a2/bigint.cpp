@@ -11,8 +11,9 @@ using namespace std;
 #include "debug.h"
 
 bigvalue_t get_reverse(const bigvalue_t &);
-bool abs_greater (const bigvalue_t &, const bigvalue_t &); 
+int abs_cmp (const bigvalue_t &, const bigvalue_t &); 
 bool get_neg_reverse(const bool &);
+pair<int, int> do_div (const int &, const int &); //temporary
 
 bigint::bigint (long that): long_value (that) {
    DEBUGF ('~', this << " -> " << long_value)
@@ -32,25 +33,23 @@ bigint::bigint (const string& that) {
    while (itor != that.end()) {
       big_value.push_back(*itor++); 
    }
+   big_value = get_reverse(big_value);
    DEBUGF ('~', this << " -> " << long_value)
 }
 
 bigvalue_t do_bigadd(const bigvalue_t & big, const bigvalue_t & small) {
    int carry = 0;
-   bigvalue_t big_r, small_r, res;
+   bigvalue_t res;
 
-   big_r = get_reverse(big);
-   small_r = get_reverse(small);
-
-   for(size_t i = 0; i < big_r.size(); ++i) {
+   for(size_t i = 0; i < big.size(); ++i) {
       int b, s, sum;
 
-      b = (int) big_r.at(i) - '0';
-      if (i >= small_r.size() ) {
+      b = (int) big.at(i) - '0';
+      if (i >= small.size() ) {
          sum = b + carry;
       }
       else {
-         s = (int) small_r.at(i) - '0';
+         s = (int) small.at(i) - '0';
          sum = b + s + carry;
       }
           
@@ -70,19 +69,16 @@ bigvalue_t do_bigadd(const bigvalue_t & big, const bigvalue_t & small) {
 
 bigvalue_t do_bigsub(const bigvalue_t & big, const bigvalue_t & small) {
    int carry = 0;
-   bigvalue_t big_r, small_r, res;
+   bigvalue_t res;
    
-   big_r = get_reverse(big);
-   small_r = get_reverse(small);
-
-   for(size_t i = 0; i < big_r.size(); ++i) {
+   for(size_t i = 0; i < big.size(); ++i) {
       int b, s, dif;
 
-      b = (int) big_r.at(i) - '0';
-      if (i >= small_r.size() ) 
+      b = (int) big.at(i) - '0';
+      if (i >= small.size() ) 
          dif = b - carry;
       else {
-         s = (int) small_r.at(i) - '0';
+         s = (int) small.at(i) - '0';
          dif = b -s - carry;
       }
           
@@ -102,8 +98,66 @@ bigvalue_t do_bigsub(const bigvalue_t & big, const bigvalue_t & small) {
       res.pop_back();
       --cur;
    } 
-   cout << "The sz is " << res.size() << endl; //delete
+//   cout << "The sz is " << res.size() << endl; //delete
 
+   return res;
+}
+
+bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
+   int carry = 0;
+   bigvalue_t res;
+   
+ /*  cout << "left: \n";
+   for(size_t i = 0; i < left.size(); ++i)//delete
+       cout << left.at(i) << " \t";
+   cout << "\n right:\n";
+   for(size_t i = 0; i < right.size(); ++i)//delete
+       cout << right.at(i) << " \t";
+   cout << endl; */
+
+   for(size_t i = 0; i < left.size(); ++i) {
+       int l = (int)left.at(i) - '0';
+       bigvalue_t temp; 
+//       cout << "i = " << i << endl; //delete
+       for(size_t j = 0; j < right.size(); ++j) {
+         int r = (int)right.at(j) - '0'; 
+         int product = r * l + carry; 
+         pair<int, int> quot_rem = do_div(product, 10);
+         product = quot_rem.second;
+         carry = quot_rem.first;
+//         cout << "quot, rem" << product << ", " << carry << endl; //delete
+         char p = '0' + product; 
+         temp.push_back(p);
+       //  cout << " p= " << p << endl; //delete
+       }
+       if (carry != 0)
+          temp.push_back('0' + carry);
+       
+       auto it = temp.begin();
+       temp.insert(it, i, '0');
+ /*      cout << "this is temp for loop " << i << endl; // delete
+       cout << "new temp's sz is " << temp.size() << endl; //del
+       for(size_t i = 0; i < temp.size(); ++i) //delete
+           cout << temp.at(i) << "  ";
+       cout << endl;
+*/
+       carry = 0;
+       if (temp.size() >= res.size())
+           res = do_bigadd(temp, res);
+       else if (temp.size() < res.size()) {
+           cout << "Just in case.\n";
+           res = do_bigadd(res, temp);
+       }
+/*       cout << "this is result for loop " << i << endl; // delete
+       for(size_t i = 0; i < res.size(); ++i) //delete
+           cout << res.at(i) << "  ";
+       cout << endl; */
+   }
+   
+/*       cout << "this is the final result " << endl; // delete
+       for(size_t i = 0; i < res.size(); ++i) //delete
+           cout << res.at(i) << "  ";
+       cout << endl; */
    return res;
 }
 
@@ -113,7 +167,7 @@ bigint operator+ (const bigint& left, const bigint& right) {
 
    left_bv = left.get_big_value();
    right_bv = right.get_big_value();
-   if (abs_greater(left_bv, right_bv)) {
+   if (abs_cmp(left_bv, right_bv) >= 0) {
       res.set_negative(left.get_negative());
       if (left.get_negative() == right.get_negative()) 
          res.set_big_value(do_bigadd(left_bv, right_bv));
@@ -137,7 +191,7 @@ bigint operator- (const bigint& left, const bigint& right) {
 
    left_bv = left.get_big_value();
    right_bv = right.get_big_value();
-   if (abs_greater(left_bv, right_bv)) {
+   if (abs_cmp(left_bv, right_bv) >= 0) {
       res.set_negative(left.get_negative());
       if (left.get_negative() == right.get_negative()) 
          res.set_big_value(do_bigsub(left_bv, right_bv));
@@ -182,40 +236,44 @@ bool abs_less (const long& left, const long& right) {
    return left < right;
 }
 
-bool abs_greater (const bigvalue_t & left, const bigvalue_t & right) {
-   bool res = false;
-   bigvalue_t left_r, right_r;
+int abs_cmp (const bigvalue_t & left, const bigvalue_t & right) {
+   int res = 0;
 
-   left_r = get_reverse(left);
-   right_r = get_reverse(right);
-   if (left_r.size() > right_r.size())
-      res = true;
-   else if (left_r.size() < right_r.size())
-      res = false;
+   if (left.size() > right.size())
+      res = 1;
+   else if (left.size() < right.size())
+      res = -1;
    else {
-      for(size_t i = left_r.size(); i != 0; --i)
-         if (left_r.at(i-1) > right_r.at(i-1)) {
-            res = true;
+      for(size_t i = left.size(); i != 0; --i)
+         if (left.at(i-1) > right.at(i-1)) {
+            res = 1;
             break;
          }
-         else if (left_r.at(i-1) < right_r.at(i-1)) {
-            res = false;
+         else if (left.at(i-1) < right.at(i-1)) {
+            res = -1;
             break;
          }
       }
-   if (res)  // delete
-      cout << "abs left > right\n";
-   else
-      cout << "abs left <= right\n";
 
-   return res; //delete
+   return res; 
 }
 
 //
 // Multiplication algorithm.
 //
 bigint operator* (const bigint& left, const bigint& right) {
-   return left.long_value * right.long_value;
+   bigint res;
+   bigvalue_t left_bv, right_bv;
+
+   left_bv = left.get_big_value();
+   right_bv = right.get_big_value();
+   res.set_big_value(do_bigmul(left_bv, right_bv));
+   if (left.get_negative() == right.get_negative())
+      res.set_negative(false);
+   else 
+      res.set_negative(true);
+
+   return res;
 }
 
 //
@@ -264,11 +322,35 @@ bigint operator% (const bigint& left, const bigint& right) {
 }
 
 bool operator== (const bigint& left, const bigint& right) {
-   return left.long_value == right.long_value;
+   bool res = false;
+
+   cout << "call ==\n"; //del
+   if (left.get_negative() == right.get_negative())
+      if (!abs_cmp(left.get_big_value(), right.get_big_value()))
+           res = true;
+
+   return res;
 }
 
 bool operator< (const bigint& left, const bigint& right) {
-   return left.long_value < right.long_value;
+   if (left.get_negative() == false and right.get_negative == true)
+      return true;
+   else if (left.get_negative() == true and right.get_negative == false)
+      return  false;
+   else {
+      if (abs_cmp(left.get_big_value(), right.get_big_value()) < 0) {
+         if (left.get_negative() == false)
+            return false;
+         return true;
+      }
+      else if (abs_cmp(left.get_big_value(), right.get_big_value()) == 0) 
+         return false;
+      else {
+         if (left.get_negative() == false)
+            return true;
+         return false;
+      }
+   }
 }
 
 ostream& operator<< (ostream& out, const bigint& that) {
@@ -281,6 +363,7 @@ ostream& operator<< (ostream& out, const bigint& that) {
    bool neg = that.get_negative();
    string a = "+", b = "-";
    out << (neg? b: a)<< long_num;
+
    return out;
 }
 
@@ -347,3 +430,18 @@ bigvalue_t get_reverse(const bigvalue_t & old) {
 
    return new_vec;
 }
+
+pair<int, int> do_div (const int & dividend, const int & divisor) {
+   int quot, rem;
+
+   pair<int, int> quot_rem;
+
+   if (divisor != 0) {
+      quot = dividend / divisor;
+      rem = dividend % divisor;
+      quot_rem = make_pair(quot, rem); 
+   }
+
+   return quot_rem;
+}
+
