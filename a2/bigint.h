@@ -24,8 +24,8 @@ class bigint {
       using quot_rem = pair<bigint,bigint>;
       using unumber = unsigned long;
       friend quot_rem divide (const bigint&, const bigint&);
-      friend void multiply_by_2 (unumber&);
-      friend void divide_by_2 (unumber&);
+      friend bigvalue_t multiply_by_2 (bigvalue_t&);
+      friend bigvalue_t divide_by_2 (bigvalue_t&);
    public:
 
       //
@@ -82,6 +82,7 @@ class bigint {
 // Make the comparisons inline for efficiency.
 //
 
+/*
 bigint pow (const bigint& base, const bigint& exponent);
 
 inline bool operator!= (const bigint &left, const bigint &right) {
@@ -96,6 +97,7 @@ inline bool operator<= (const bigint &left, const bigint &right) {
 inline bool operator>= (const bigint &left, const bigint &right) {
    return not (left < right);
 }
+*/
 
 #endif
 

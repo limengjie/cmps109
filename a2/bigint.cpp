@@ -13,7 +13,8 @@ using namespace std;
 bigvalue_t get_reverse(const bigvalue_t &);
 int abs_cmp (const bigvalue_t &, const bigvalue_t &); 
 bool get_neg_reverse(const bool &);
-pair<int, int> do_div (const int &, const int &); //temporary
+pair<int, int> do_smldiv (const int &, const int &); //temporary
+void trim_zero(bigvalue_t &);
 
 bigint::bigint (long that): long_value (that) {
    DEBUGF ('~', this << " -> " << long_value)
@@ -91,75 +92,17 @@ bigvalue_t do_bigsub(const bigvalue_t & big, const bigvalue_t & small) {
       res.push_back('0' + dif);
    }
 
+   trim_zero(res);
+/*
    int cur = res.size();
-
    while (res.at(cur-1) == '0') {
-      //cout << "The msb is " << res.at(cur-1) << endl; //delete
       res.pop_back();
       --cur;
-   } 
-//   cout << "The sz is " << res.size() << endl; //delete
+   } */
 
    return res;
 }
 
-bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
-   int carry = 0;
-   bigvalue_t res;
-   
- /*  cout << "left: \n";
-   for(size_t i = 0; i < left.size(); ++i)//delete
-       cout << left.at(i) << " \t";
-   cout << "\n right:\n";
-   for(size_t i = 0; i < right.size(); ++i)//delete
-       cout << right.at(i) << " \t";
-   cout << endl; */
-
-   for(size_t i = 0; i < left.size(); ++i) {
-       int l = (int)left.at(i) - '0';
-       bigvalue_t temp; 
-//       cout << "i = " << i << endl; //delete
-       for(size_t j = 0; j < right.size(); ++j) {
-         int r = (int)right.at(j) - '0'; 
-         int product = r * l + carry; 
-         pair<int, int> quot_rem = do_div(product, 10);
-         product = quot_rem.second;
-         carry = quot_rem.first;
-//         cout << "quot, rem" << product << ", " << carry << endl; //delete
-         char p = '0' + product; 
-         temp.push_back(p);
-       //  cout << " p= " << p << endl; //delete
-       }
-       if (carry != 0)
-          temp.push_back('0' + carry);
-       
-       auto it = temp.begin();
-       temp.insert(it, i, '0');
- /*      cout << "this is temp for loop " << i << endl; // delete
-       cout << "new temp's sz is " << temp.size() << endl; //del
-       for(size_t i = 0; i < temp.size(); ++i) //delete
-           cout << temp.at(i) << "  ";
-       cout << endl;
-*/
-       carry = 0;
-       if (temp.size() >= res.size())
-           res = do_bigadd(temp, res);
-       else if (temp.size() < res.size()) {
-           cout << "Just in case.\n";
-           res = do_bigadd(res, temp);
-       }
-/*       cout << "this is result for loop " << i << endl; // delete
-       for(size_t i = 0; i < res.size(); ++i) //delete
-           cout << res.at(i) << "  ";
-       cout << endl; */
-   }
-   
-/*       cout << "this is the final result " << endl; // delete
-       for(size_t i = 0; i < res.size(); ++i) //delete
-           cout << res.at(i) << "  ";
-       cout << endl; */
-   return res;
-}
 
 bigint operator+ (const bigint& left, const bigint& right) {
    bigint res;
@@ -225,12 +168,14 @@ bigint operator- (const bigint& right) {
    return right;
 }
 
+/*
 long bigint::to_long() const {
    if (*this <= bigint (numeric_limits<long>::min())
     or *this > bigint (numeric_limits<long>::max()))
                throw range_error ("bigint__to_long: out of range");
    return long_value;
 }
+*/
 
 bool abs_less (const long& left, const long& right) {
    return left < right;
@@ -261,6 +206,64 @@ int abs_cmp (const bigvalue_t & left, const bigvalue_t & right) {
 //
 // Multiplication algorithm.
 //
+
+bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
+   int carry = 0;
+   bigvalue_t res;
+   
+ /*  cout << "left: \n";
+   for(size_t i = 0; i < left.size(); ++i)//delete
+       cout << left.at(i) << " \t";
+   cout << "\n right:\n";
+   for(size_t i = 0; i < right.size(); ++i)//delete
+       cout << right.at(i) << " \t";
+   cout << endl; */
+
+   for(size_t i = 0; i < left.size(); ++i) {
+       int l = (int)left.at(i) - '0';
+       bigvalue_t temp; 
+       for(size_t j = 0; j < right.size(); ++j) {
+         int r = (int)right.at(j) - '0'; 
+         int product = r * l + carry; 
+         pair<int, int> quot_rem = do_smldiv(product, 10);
+         product = quot_rem.second;
+         carry = quot_rem.first;
+//         cout << "quot, rem" << product << ", " << carry << endl; //delete
+         char p = '0' + product; 
+         temp.push_back(p);
+       //  cout << " p= " << p << endl; //delete
+       }
+       if (carry != 0)
+          temp.push_back('0' + carry);
+       
+       auto it = temp.begin();
+       temp.insert(it, i, '0');
+ /*      cout << "this is temp for loop " << i << endl; // delete
+       cout << "new temp's sz is " << temp.size() << endl; //del
+       for(size_t i = 0; i < temp.size(); ++i) //delete
+           cout << temp.at(i) << "  ";
+       cout << endl;
+*/
+       carry = 0;
+       if (temp.size() >= res.size())
+           res = do_bigadd(temp, res);
+       else if (temp.size() < res.size()) {
+           cout << "Just in case.\n";
+           res = do_bigadd(res, temp);
+       }
+/*       cout << "this is result for loop " << i << endl; // delete
+       for(size_t i = 0; i < res.size(); ++i) //delete
+           cout << res.at(i) << "  ";
+       cout << endl; */
+   }
+   
+/*       cout << "this is the final result " << endl; // delete
+       for(size_t i = 0; i < res.size(); ++i) //delete
+           cout << res.at(i) << "  ";
+       cout << endl; */
+   return res;
+}
+
 bigint operator* (const bigint& left, const bigint& right) {
    bigint res;
    bigvalue_t left_bv, right_bv;
@@ -280,15 +283,39 @@ bigint operator* (const bigint& left, const bigint& right) {
 // Division algorithm.
 //
 
-void multiply_by_2 (bigint::unumber& unumber_value) {
-   unumber_value *= 2;
+bigvalue_t multiply_by_2 (bigvalue_t & big) {
+   bigvalue_t res;
+   vector<unsigned char> two;   
+
+   two.push_back('2');
+   res = do_bigmul(two, big);
+
+   return res; 
 }
 
-void divide_by_2 (bigint::unumber& unumber_value) {
-   unumber_value /= 2;
+bigvalue_t divide_by_2 (bigvalue_t & dividend) {
+   bigvalue_t res, dividend_r;
+   int rem = 0;
+   
+   dividend_r = get_reverse(dividend); 
+   for(size_t i = 0; i < dividend_r.size(); ++i) {
+      int d = (int)dividend_r.at(i) - '0';
+      d += (rem*10);
+      if (d > 2) {
+         pair<int, int> q_r = do_smldiv(d, 2);
+         rem = q_r.second;
+         res.insert(res.begin(), q_r.first + '0');
+      }
+      else
+         res.insert(res.begin(), '0');
+   }
+   trim_zero(res);
+
+   return res;
 }
 
 
+/*
 bigint::quot_rem divide (const bigint& left, const bigint& right) {
    if (right == 0) throw domain_error ("divide by 0");
    using unumber = unsigned long;
@@ -312,13 +339,24 @@ bigint::quot_rem divide (const bigint& left, const bigint& right) {
    }
    return {quotient, remainder};
 }
+*/
 
 bigint operator/ (const bigint& left, const bigint& right) {
-   return divide (left, right).first;
+   bigint res;
+   bigvalue_t left_bv, right_bv;
+
+   left_bv = left.get_big_value();
+   right_bv = right.get_big_value();
+   res.set_big_value(divide_by_2(left_bv));//temporary
+   if (left.get_negative() == right.get_negative())
+      res.set_negative(false);
+   else 
+      res.set_negative(true);
+
+   return res;
 }
 
 bigint operator% (const bigint& left, const bigint& right) {
-   return divide (left, right).second;
 }
 
 bool operator== (const bigint& left, const bigint& right) {
@@ -332,6 +370,7 @@ bool operator== (const bigint& left, const bigint& right) {
    return res;
 }
 
+/*
 bool operator< (const bigint& left, const bigint& right) {
    if (left.get_negative() == false and right.get_negative == true)
       return true;
@@ -352,6 +391,7 @@ bool operator< (const bigint& left, const bigint& right) {
       }
    }
 }
+*/
 
 ostream& operator<< (ostream& out, const bigint& that) {
    string long_num;
@@ -368,6 +408,7 @@ ostream& operator<< (ostream& out, const bigint& that) {
 }
 
 
+/*
 bigint pow (const bigint& base, const bigint& exponent) {
    DEBUGF ('^', "base = " << base << ", exponent = " << exponent);
    if (base == 0) return 0;
@@ -390,6 +431,7 @@ bigint pow (const bigint& base, const bigint& exponent) {
    DEBUGF ('^', "result = " << result);
    return result;
 }
+*/
 
 bigvalue_t bigint::get_big_value() const {
    bigvalue_t big;
@@ -431,7 +473,7 @@ bigvalue_t get_reverse(const bigvalue_t & old) {
    return new_vec;
 }
 
-pair<int, int> do_div (const int & dividend, const int & divisor) {
+pair<int, int> do_smldiv (const int & dividend, const int & divisor) {
    int quot, rem;
 
    pair<int, int> quot_rem;
@@ -445,3 +487,11 @@ pair<int, int> do_div (const int & dividend, const int & divisor) {
    return quot_rem;
 }
 
+void trim_zero(bigvalue_t & vec) {
+   int cur = vec.size();
+ 
+   while (vec.at(cur-1) == '0') {
+      vec.pop_back();
+      --cur;
+   } 
+}
