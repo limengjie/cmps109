@@ -12,6 +12,7 @@ using namespace std;
 
 using digit_t = unsigned char;
 using bigvalue_t = vector<digit_t>;
+using quot_rem = pair<bigvalue_t, bigvalue_t>;
 //
 // Define class bigint
 //
@@ -21,9 +22,9 @@ class bigint {
       long long_value {}; //delete
       bool negative;
       bigvalue_t big_value;
-      using quot_rem = pair<bigint,bigint>;
+ //     using quot_rem = pair<bigint,bigint>;
       using unumber = unsigned long;
-      friend quot_rem divide (const bigint&, const bigint&);
+  //    friend quot_rem divide (const bigint&, const bigint&);
       friend bigvalue_t multiply_by_2 (bigvalue_t&);
       friend bigvalue_t divide_by_2 (bigvalue_t&);
    public:
@@ -70,6 +71,7 @@ class bigint {
       friend bigvalue_t do_bigadd (const bigvalue_t&, const bigvalue_t&);
       friend bigvalue_t do_bigsub (const bigvalue_t&, const bigvalue_t&);
       friend bigvalue_t do_bigmul (const bigvalue_t&, const bigvalue_t&);
+      friend quot_rem   do_bigdiv (const bigvalue_t&, const bigvalue_t&);
       bigvalue_t get_big_value() const;
       void set_big_value(const bigvalue_t &);
       bool get_negative() const;

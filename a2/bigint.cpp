@@ -152,6 +152,9 @@ bigint operator- (const bigint& left, const bigint& right) {
       }
    } 
 
+   if (!res.big_value.at(0))
+      res.set_negative(false);
+
    return res;
 }
 
@@ -225,9 +228,9 @@ bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
        for(size_t j = 0; j < right.size(); ++j) {
          int r = (int)right.at(j) - '0'; 
          int product = r * l + carry; 
-         pair<int, int> quot_rem = do_smldiv(product, 10);
-         product = quot_rem.second;
-         carry = quot_rem.first;
+         pair<int, int> quo_rem = do_smldiv(product, 10);
+         product = quo_rem.second;
+         carry = quo_rem.first;
 //         cout << "quot, rem" << product << ", " << carry << endl; //delete
          char p = '0' + product; 
          temp.push_back(p);
@@ -284,8 +287,7 @@ bigint operator* (const bigint& left, const bigint& right) {
 //
 
 bigvalue_t multiply_by_2 (bigvalue_t & big) {
-   bigvalue_t res;
-   vector<unsigned char> two;   
+   bigvalue_t res, two;
 
    two.push_back('2');
    res = do_bigmul(two, big);
@@ -301,22 +303,24 @@ bigvalue_t divide_by_2 (bigvalue_t & dividend) {
    for(size_t i = 0; i < dividend_r.size(); ++i) {
       int d = (int)dividend_r.at(i) - '0';
       d += (rem*10);
-      if (d > 2) {
+//      cout << "d = " << d << endl;
+      if (d >= 2) {
          pair<int, int> q_r = do_smldiv(d, 2);
          rem = q_r.second;
          res.insert(res.begin(), q_r.first + '0');
       }
-      else
+      else {
          res.insert(res.begin(), '0');
+         rem = d;
+      }
    }
    trim_zero(res);
 
    return res;
 }
-
-
+   
 /*
-bigint::quot_rem divide (const bigint& left, const bigint& right) {
+bigint::quo_rem divide (const bigint& left, const bigint& right) {
    if (right == 0) throw domain_error ("divide by 0");
    using unumber = unsigned long;
    static unumber zero = 0;
@@ -341,13 +345,85 @@ bigint::quot_rem divide (const bigint& left, const bigint& right) {
 }
 */
 
+quot_rem do_bigdiv (bigvalue_t & dividend, bigvalue_t & divisor) {
+   bigvalue_t powof2, divisor_, quotient, remainder;
+   quot_rem res;
+ 
+   if (!divisor.size()) {
+      cout << "divisor cannot be 0!\n";
+      divisor.push_back('1');
+   }
+   powof2.push_back('1');
+   for(size_t i = 0; i < divisor.size(); ++i) 
+      divisor_.push_back(divisor.at(i));
+   //cout << "divisor_: \n"; //delete
+   //for(size_t i = 0; i < divisor_.size(); ++i)
+   //   cout << divisor_.at(i) << "  ";
+   //cout << endl;
+   while (abs_cmp(multiply_by_2 (divisor_), dividend) < 0) {
+      divisor_ = multiply_by_2 (divisor_);
+      powof2 = multiply_by_2 (powof2);
+   }
+/*
+   cout << "divisor_: \n"; //delete
+   for(size_t i = 0; i < divisor_.size(); ++i)
+      cout << divisor_.at(i) << "  ";
+   cout << endl;
+   cout << "powof2: \n"; //delete
+   for(size_t i = 0; i < powof2.size(); ++i)
+      cout << powof2.at(i) << "  ";
+   cout << endl;
+*/
+   for(size_t i = 0; i < dividend.size(); ++i)
+      remainder.push_back(dividend.at(i)); 
+ //  int cnt = 0; //del
+   while (powof2.at(0) != '0') {
+ //     cout << cnt++ << " loop:\n"; //del
+      if (abs_cmp(divisor_, remainder) <= 0) { 
+         remainder = do_bigsub(remainder, divisor_); 
+/*
+         cout << "remainder: \n"; //delete
+         for(size_t i = 0; i < remainder.size(); ++i)
+            cout << remainder.at(i) << "  ";
+         cout << endl;
+*/
+         if (abs_cmp(powof2, quotient) >= 0)  
+            quotient = do_bigadd(powof2, quotient);
+         else
+            quotient = do_bigadd(quotient, powof2);
+/*
+         cout << "quotient: \n"; //delete
+         for(size_t i = 0; i < quotient.size(); ++i)
+            cout << quotient.at(i) << "  ";
+         cout << endl;//delete
+*/
+      }
+      divisor_ = divide_by_2 (divisor_);
+      powof2 = divide_by_2 (powof2); 
+/*
+   cout << "divisor_: \n"; //delete
+   for(size_t i = 0; i < divisor_.size(); ++i)
+      cout << divisor_.at(i) << "  ";
+   cout << endl;
+   cout << "powof2: \n"; //delete
+   for(size_t i = 0; i < powof2.size(); ++i)
+      cout << powof2.at(i) << "  ";
+   cout << endl;
+*/
+   }
+   res = make_pair(quotient, remainder);
+
+   return res;
+}
+
 bigint operator/ (const bigint& left, const bigint& right) {
    bigint res;
    bigvalue_t left_bv, right_bv;
 
    left_bv = left.get_big_value();
    right_bv = right.get_big_value();
-   res.set_big_value(divide_by_2(left_bv));//temporary
+   res.set_big_value(do_bigdiv(left_bv, right_bv).first);
+   //res.set_big_value(divide_by_2 (right_bv));
    if (left.get_negative() == right.get_negative())
       res.set_negative(false);
    else 
@@ -357,6 +433,18 @@ bigint operator/ (const bigint& left, const bigint& right) {
 }
 
 bigint operator% (const bigint& left, const bigint& right) {
+   bigint res;
+   bigvalue_t left_bv, right_bv;
+
+   left_bv = left.get_big_value();
+   right_bv = right.get_big_value();
+   res.set_big_value(do_bigdiv(left_bv, right_bv).second);
+   if (left.get_negative() == right.get_negative())
+      res.set_negative(false);
+   else 
+      res.set_negative(true);
+
+   return res;
 }
 
 bool operator== (const bigint& left, const bigint& right) {
@@ -396,13 +484,19 @@ bool operator< (const bigint& left, const bigint& right) {
 ostream& operator<< (ostream& out, const bigint& that) {
    string long_num;
 
-   auto rit = that.big_value.rbegin();
-   for(; rit != that.big_value.rend(); ++rit)
-      long_num.push_back(*rit);
+  // cout << "call <<\n";//del
+
+   if (that.big_value.size() != 0) {
+      auto rit = that.big_value.rbegin();
+      for(; rit != that.big_value.rend(); ++rit)
+         long_num.push_back(*rit);
    
-   bool neg = that.get_negative();
-   string a = "+", b = "-";
-   out << (neg? b: a)<< long_num;
+      bool neg = that.get_negative();
+      string a = "+", b = "-";
+      out << (neg? b: a)<< long_num;
+   }
+   else
+      out << "0";
 
    return out;
 }
@@ -476,22 +570,24 @@ bigvalue_t get_reverse(const bigvalue_t & old) {
 pair<int, int> do_smldiv (const int & dividend, const int & divisor) {
    int quot, rem;
 
-   pair<int, int> quot_rem;
+   pair<int, int> quo_rem;
 
    if (divisor != 0) {
       quot = dividend / divisor;
       rem = dividend % divisor;
-      quot_rem = make_pair(quot, rem); 
+      quo_rem = make_pair(quot, rem); 
    }
 
-   return quot_rem;
+   return quo_rem;
 }
 
 void trim_zero(bigvalue_t & vec) {
    int cur = vec.size();
  
    while (vec.at(cur-1) == '0') {
+      if (cur == 1)
+         return;
       vec.pop_back();
       --cur;
-   } 
+   }
 }
