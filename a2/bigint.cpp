@@ -15,6 +15,8 @@ int abs_cmp (const bigvalue_t &, const bigvalue_t &);
 bool get_neg_reverse(const bool &);
 pair<int, int> do_smldiv (const int &, const int &); //temporary
 void trim_zero(bigvalue_t &);
+bool isOdd (const bigvalue_t &);
+bool isGZ (const bigvalue_t &);
 
 bigint::bigint (long that): long_value (that) {
    DEBUGF ('~', this << " -> " << long_value)
@@ -93,12 +95,6 @@ bigvalue_t do_bigsub(const bigvalue_t & big, const bigvalue_t & small) {
    }
 
    trim_zero(res);
-/*
-   int cur = res.size();
-   while (res.at(cur-1) == '0') {
-      res.pop_back();
-      --cur;
-   } */
 
    return res;
 }
@@ -152,7 +148,7 @@ bigint operator- (const bigint& left, const bigint& right) {
       }
    } 
 
-   if (!res.big_value.at(0))
+   if (res.get_big_value().at(0) == '0')
       res.set_negative(false);
 
    return res;
@@ -360,7 +356,7 @@ quot_rem do_bigdiv (bigvalue_t & dividend, bigvalue_t & divisor) {
    //for(size_t i = 0; i < divisor_.size(); ++i)
    //   cout << divisor_.at(i) << "  ";
    //cout << endl;
-   while (abs_cmp(multiply_by_2 (divisor_), dividend) < 0) {
+   while (abs_cmp(divisor_, dividend) < 0) {
       divisor_ = multiply_by_2 (divisor_);
       powof2 = multiply_by_2 (powof2);
    }
@@ -527,6 +523,71 @@ bigint pow (const bigint& base, const bigint& exponent) {
 }
 */
 
+bigint pow (const bigint& base, const bigint& exponent) {
+   bigint zero, one, res;
+   bigvalue_t vec0, vec1;  
+   bigvalue_t base_copy, expt, result;
+
+   vec0.push_back('0');
+   zero.set_negative(false);
+   zero.set_big_value(vec0);
+   vec1.push_back('1');
+   one.set_negative(false);
+   one.set_big_value(vec1);
+
+   if ((expt = 
+        exponent.get_big_value()).at(0) == '0' 
+        and expt.size() == 1)
+      return one;
+   if ((base_copy = 
+        base.get_big_value()).at(0) == '0' 
+        and base_copy.size() == 1)
+      return zero;
+   if (base_copy.at(0) == '1' 
+       and base_copy.size() == 1) {
+      if (base.get_negative() and isOdd(expt))
+         one.set_negative(true);
+         return one;
+   }
+   if (exponent.get_negative() == true) 
+      return zero;
+   if (isOdd(expt))
+      res.set_negative(base.get_negative());
+   else
+      res.set_negative(false); 
+
+   result = vec1;
+   while (isGZ(expt)) {
+      if (isOdd(expt)) {
+         result = do_bigmul(result, base_copy);
+         expt = do_bigsub(expt, vec1); 
+         
+      cout << "result: \n"; //delete
+      for(size_t i = 0; i < result.size(); ++i)
+         cout << result.at(i) << "  ";
+      cout << endl;
+      cout << "expt: \n"; //delete
+      for(size_t i = 0; i < expt.size(); ++i)
+         cout << expt.at(i) << "  ";
+      cout << endl;
+      } else {
+         base_copy = do_bigmul(base_copy, base_copy);
+         expt = divide_by_2(expt);
+      cout << "base_copy: \n"; //delete
+      for(size_t i = 0; i < base_copy.size(); ++i)
+         cout << base_copy.at(i) << "  ";
+      cout << endl;
+      cout << "expt: \n"; //delete
+      for(size_t i = 0; i < expt.size(); ++i)
+         cout << expt.at(i) << "  ";
+      cout << endl;
+      }
+   }
+   res.set_big_value(result);
+
+   return res;
+}
+
 bigvalue_t bigint::get_big_value() const {
    bigvalue_t big;
 
@@ -590,4 +651,21 @@ void trim_zero(bigvalue_t & vec) {
       vec.pop_back();
       --cur;
    }
+}
+
+bool isOdd (const bigvalue_t & value) {
+   int val;
+
+   val = (int)value.at(0) - '0';
+   if (((val / 2) * 2) == val)
+      return false;
+   return true;
+}
+
+bool isGZ (const bigvalue_t & value) {
+   if (value.size() > 1)
+      return true;
+   if (value.at(0) == '0')
+      return false;
+   return true;
 }

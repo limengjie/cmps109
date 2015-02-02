@@ -75,7 +75,6 @@ class bigint {
       bigvalue_t get_big_value() const;
       void set_big_value(const bigvalue_t &);
       bool get_negative() const;
-      //bool get_neg_reverse(const bool &);
       void set_negative(const bool &);
 };
 
@@ -84,8 +83,8 @@ class bigint {
 // Make the comparisons inline for efficiency.
 //
 
-/*
 bigint pow (const bigint& base, const bigint& exponent);
+/*
 
 inline bool operator!= (const bigint &left, const bigint &right) {
    return not (left == right);

@@ -32,7 +32,7 @@ void do_arith (bigint_stack& stack, const char oper) {
       case '*': result = left * right; break;
       case '/': result = left / right; break;
       case '%': result = left % right; break;
-//      case '^': result = pow (left, right); break;
+      case '^': result = pow (left, right); break;
       default: throw invalid_argument (
                      string ("do_arith operator is ") + oper);
    }
