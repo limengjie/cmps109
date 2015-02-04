@@ -1,0 +1,123 @@
+$Id: 2012q2-test2,v 1.2 2012-05-15 14:58:56-07 - - $
+Answers to 2012q2-test2, page 1
+
+________________________________________________________________________
+Question 1.
+
+#include <iostream>
+#include <map>
+using namespace std;
+int main (int argc, char **argv) {
+   map<string,int> m;
+   for (int i = 1; i < argc; ++i) m[argv[i]] = i;
+   for (map<string,int>::const_iterator i = m.begin();
+        i != m.end(); ++i) {
+      cout << i->first << " = " << i->second << endl;
+   }
+}
+
+________________________________________________________________________
+Question 2.
+
+string shift (list<string> &words) {
+   if (words.size() == 0) throw out_of_range ("shift error");
+   string front = words.front();
+   words.pop_front();
+   return front;
+}
+
+________________________________________________________________________
+Question 3.
+
+template <class itor>
+itor biggest (itor begin, itor end) {
+   if (begin == end) return end;
+   itor big = *begin++;
+   for (; begin != end; ++begin)
+      if (*big < *begin) big = begin;
+   return big;
+}
+
+________________________________________________________________________
+Question 4.
+
+explicit intvector (size_t size): _size(size), _capacity(size),
+                    _data(new int[size]) {
+}
+
+
+Answers to 2012q2-test2, page 2
+
+________________________________________________________________________
+Question 5.
+
+double sum (vitor begin, vitor end) {
+   double s = 0.0;
+   while (begin != end) s += *begin++;
+   return s;
+}
+
+________________________________________________________________________
+Question 6(a).
+
+class base {
+   public:
+      virtual void print (ostream &) = 0;
+      virtual ~base() {}
+};
+
+________________________________________________________________________
+Question 6(b).
+
+class intx: public base {
+   private:
+      int value;
+   public:
+      explicit intx (int v = 0): value(v) {}
+      virtual void print(ostream &out) { out << value; }
+};
+
+________________________________________________________________________
+Question 6(c).
+
+class strx: public base {
+   private:
+      string value;
+   public:
+      explicit strx (string s = string()): value(s) {};
+      virtual void print(ostream &out) { out << value; }
+};
+
+________________________________________________________________________
+Question 6(d).
+
+ostream &operator<< (ostream &out, base *b) {
+   b->print (out);
+   return out;
+}
+
+
+Answers to 2012q2-test2, page 3
+
+ 1.    (B) foo can not see b.  bar can see a.
+
+ 2.    (B) pointer
+
+ 3.    (D) templates
+
+ 4.    (B) graph containing cycles
+
+ 5.    (C) protected
+
+ 6.    (A) string &s;
+
+ 7.    (C) foo operator++ (int);
+
+ 8.    (B) return 0;
+
+ 9.    (D) f = b;
+
+10.    (C) cout << **i << endl;
+
+11.    (A) #include <iostream>
+

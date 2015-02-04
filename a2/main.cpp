@@ -36,7 +36,7 @@ void do_arith (bigint_stack& stack, const char oper) {
       default: throw invalid_argument (
                      string ("do_arith operator is ") + oper);
    }
-   cout << "The res is " << result << endl; // delete
+ //  cout << "The res is " << result << endl; // delete
    DEBUGF ('d', "result = " << result);
    stack.push (result);
 }

@@ -68,10 +68,14 @@ class bigint {
       friend bool operator== (const bigint&, const bigint&);
       friend bool operator<  (const bigint&, const bigint&);
      
-      friend bigvalue_t do_bigadd (const bigvalue_t&, const bigvalue_t&);
-      friend bigvalue_t do_bigsub (const bigvalue_t&, const bigvalue_t&);
-      friend bigvalue_t do_bigmul (const bigvalue_t&, const bigvalue_t&);
-      friend quot_rem   do_bigdiv (const bigvalue_t&, const bigvalue_t&);
+      friend bigvalue_t do_bigadd (const bigvalue_t&, 
+                                   const bigvalue_t&);
+      friend bigvalue_t do_bigsub (const bigvalue_t&, 
+                                   const bigvalue_t&);
+      friend bigvalue_t do_bigmul (const bigvalue_t&, 
+                                   const bigvalue_t&);
+      friend quot_rem   do_bigdiv (const bigvalue_t&, 
+                                   const bigvalue_t&);
       bigvalue_t get_big_value() const;
       void set_big_value(const bigvalue_t &);
       bool get_negative() const;

@@ -206,7 +206,8 @@ int abs_cmp (const bigvalue_t & left, const bigvalue_t & right) {
 // Multiplication algorithm.
 //
 
-bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
+bigvalue_t do_bigmul(const bigvalue_t & left, 
+                    const bigvalue_t & right) {
    int carry = 0;
    bigvalue_t res;
    
@@ -227,7 +228,6 @@ bigvalue_t do_bigmul(const bigvalue_t & left, const bigvalue_t & right) {
          pair<int, int> quo_rem = do_smldiv(product, 10);
          product = quo_rem.second;
          carry = quo_rem.first;
-//         cout << "quot, rem" << product << ", " << carry << endl; //delete
          char p = '0' + product; 
          temp.push_back(p);
        //  cout << " p= " << p << endl; //delete
@@ -466,7 +466,8 @@ bool operator< (const bigint& left, const bigint& right) {
             return false;
          return true;
       }
-      else if (abs_cmp(left.get_big_value(), right.get_big_value()) == 0) 
+      else if (abs_cmp(left.get_big_value(), 
+               right.get_big_value()) == 0) 
          return false;
       else {
          if (left.get_negative() == false)
@@ -483,12 +484,18 @@ ostream& operator<< (ostream& out, const bigint& that) {
   // cout << "call <<\n";//del
 
    if (that.big_value.size() != 0) {
+      int count = 1;
       auto rit = that.big_value.rbegin();
-      for(; rit != that.big_value.rend(); ++rit)
+      for(; rit != that.big_value.rend(); ++rit) {
+         if (count++ == 70) {
+            long_num.push_back('\\');
+            long_num.push_back('\n');
+            count = 2;
+         } 
          long_num.push_back(*rit);
-   
+      } 
       bool neg = that.get_negative();
-      string a = "+", b = "-";
+      string a = "", b = "-";
       out << (neg? b: a)<< long_num;
    }
    else
@@ -562,6 +569,7 @@ bigint pow (const bigint& base, const bigint& exponent) {
          result = do_bigmul(result, base_copy);
          expt = do_bigsub(expt, vec1); 
          
+/*
       cout << "result: \n"; //delete
       for(size_t i = 0; i < result.size(); ++i)
          cout << result.at(i) << "  ";
@@ -570,9 +578,11 @@ bigint pow (const bigint& base, const bigint& exponent) {
       for(size_t i = 0; i < expt.size(); ++i)
          cout << expt.at(i) << "  ";
       cout << endl;
+*/
       } else {
          base_copy = do_bigmul(base_copy, base_copy);
          expt = divide_by_2(expt);
+/*
       cout << "base_copy: \n"; //delete
       for(size_t i = 0; i < base_copy.size(); ++i)
          cout << base_copy.at(i) << "  ";
@@ -581,6 +591,7 @@ bigint pow (const bigint& base, const bigint& exponent) {
       for(size_t i = 0; i < expt.size(); ++i)
          cout << expt.at(i) << "  ";
       cout << endl;
+*/
       }
    }
    res.set_big_value(result);

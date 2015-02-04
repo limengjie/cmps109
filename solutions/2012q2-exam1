@@ -1,0 +1,154 @@
+$Id: 2012q2-test1,v 1.2 2012-04-24 16:37:58-07 - - $
+Answers to 2012q2-test1, page 1
+
+________________________________________________________________________
+Question 1.
+
+typedef vector<char> number;
+number *addvec (const number &v1, const number &v2) {
+   char carry = 0;
+   number *v3 = new number();
+   bool done1 = false;
+   bool done2 = false;
+   for (size_t i = 0; ; ++i) {
+      char digit1, digit2;
+      if (i < v1.size()) { digit1 = v1[i]; }
+                    else { digit1 = 0; done1 = true; }
+      if (i < v2.size()) { digit2 = v2[i]; }
+                    else { digit2 = 0; done2 = true; }
+      if (done1 && done2) break;
+      char sum = digit1 + digit2 + carry;
+      v3->push_back (sum % 10);
+      carry = sum / 10;
+   }
+   if (carry != 0) v3->push_back (carry);
+   return v3;
+}
+
+________________________________________________________________________
+Question 2.
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+int main (int, char **) {
+   vector<string> vec;
+   for (;;) {
+      string line;
+      getline (cin, line);
+      if (cin.eof()) break;
+      vec.push_back (line);
+   }
+   vector<string>::const_iterator itor = vec.begin();
+   vector<string>::const_iterator end = vec.end();
+   for (; itor != end; ++itor) {
+      cout << *itor << endl;
+   }
+   return 0;
+}
+
+
+Answers to 2012q2-test1, page 2
+
+________________________________________________________________________
+Question 3.
+
+foo ();
+foo (const foo &);
+foo &operator= (const foo &);
+~foo ();
+
+________________________________________________________________________
+Question 4.
+
+for (int i = 1; i < argc; ++i) {
+   string fname = argv[i];
+   function f = fnmap[fname];
+   if (f == NULL) {
+      cout << "Error " << fname << " does not exist." << endl;
+   }else {
+      f();
+   }
+}
+
+________________________________________________________________________
+Question 5.
+
+vi_itor find (const vector<int> &vec, int wanted_int) {
+   vi_itor itor = vec.begin();
+   vi_itor end = vec.end();
+   for (; itor != end; ++itor) {
+      if (*itor == wanted_int) return itor;
+   }
+   return end;
+}
+
+________________________________________________________________________
+Question 6.
+
+ostream &operator<< (ostream &out, const vector<char> &vec) ){
+   if (vec.size() == 0) out << 0;
+   else for (size_t i = vec.size(); i > 0; --i) {
+      out << int (vec[i-1]);
+   } 
+   return out;
+}     
+
+--or--
+
+stream &operator<< (ostream &out, const vector<char> &vec) ){
+   vector<char>::const_reverse_iterator i = vec.crbegin();
+   if (i == vec.crend()) out << 0;
+   else {
+      for (; i != vec.crend(); ++i) { 
+         out << int (*i);
+      }    
+   } 
+   return out;  
+}     
+
+________________________________________________________________________
+Question 7.
+
+class stack {
+   private:
+      size_t top;
+      int *array;
+   public:
+      void push (int);
+      int pop ();
+      bool empty ();
+}
+
+// Probably should also have 4 default members, but OK
+// if they are omitted.
+
+
+Answers to 2012q2-test1, page 3
+
+ 1.    (B) delete p;
+
+ 2.    (C) void foo (const bar &);
+
+ 3.    (B) pointer
+
+ 4.    (B) pointer
+
+ 5.    (C) void f1 (T x);
+
+ 6.    (D) Prevents one-argument constructors from behaving as
+           automatic type conversions.
+
+ 7.    (D) shallow
+
+ 8.    (A) s->at(i)
+
+ 9.    (C) int *p = new vector<int> (10);
+
+10.    (D) using namespace std;
+
+11.    (C) Bjarne Stroustrup, 1979
+
