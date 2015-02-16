@@ -1,0 +1,7 @@
+     #comment     
+                     
+        No equal in this line.          
+          key key key = value value value  
+only key here =
+     = only value here  
+        =     
