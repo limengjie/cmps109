@@ -33,12 +33,11 @@ class listmap {
       listmap& operator= (const listmap&);
       ~listmap();
       iterator insert (const value_type&);
-      iterator find (const key_type&) const;
+      iterator find (const key_type&) ;
       iterator erase (iterator position);
       iterator begin();
       iterator end();
       bool empty() const;
-//      void set_anchor(const node &);
       iterator get_pos (const value_type &);
 };
 

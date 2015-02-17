@@ -75,6 +75,7 @@ listmap<Key,Value,Less>::insert (const value_type& pair) {
    node* prev_ptr;
    node* next_ptr;
    node* pnew_node;
+
    if (empty() and end() == begin() ) {
       prev_ptr = anchor();
       next_ptr = anchor();
@@ -104,9 +105,17 @@ listmap<Key,Value,Less>::insert (const value_type& pair) {
 //
 template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
-listmap<Key,Value,Less>::find (const key_type& that) const {
+listmap<Key,Value,Less>::find (const key_type& that) {
    TRACE ('l', that);
-   return iterator();
+
+   iterator pos;
+   
+   for (pos = begin(); pos != end(); ++pos) {
+      if (pos->value.first == that)
+         break;
+   }
+
+   return pos;
 }
 
 //
@@ -116,7 +125,16 @@ template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::erase (iterator position) {
    TRACE ('l', &*position);
-   return iterator();
+
+   node * p_old = (position->next)->prev;
+   node * p_prev = position->prev;
+   node * p_next = position->next;
+   
+   p_prev->next = p_next;
+   p_next->prev = p_prev;
+   delete p_old;
+
+   return position;
 }
 
 
@@ -186,16 +204,6 @@ inline bool listmap<Key,Value,Less>::iterator::operator!=
             (const iterator& that) const {
    return this->where != that.where;
 }
-
-/*
-template <typename Key, typename Value, class Less>
-void listmap<Key, Value, Less>::set_anchor
-     (const node & new_node) {
-   if (this->empty())
-      anchor_.next = &new_node;
-   anchor_.prev = &new_node; 
-}
-*/
 
 // find the position to insert a new node
 template <typename Key, typename Value, class Less>
