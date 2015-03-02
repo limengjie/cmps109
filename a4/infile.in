@@ -1,0 +1,6 @@
+define e0 ellipse 150 60
+#define text 10
+draw red e0 400 300 
+define c0 circle 100
+draw green c0 100 150
+
