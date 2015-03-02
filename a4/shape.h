@@ -101,9 +101,10 @@ class circle: public ellipse {
 
 class polygon: public shape {
    protected:
-      const vertex_list vertices;
+      vertex_list vertices;
    public:
       polygon (const vertex_list& vertices);
+      polygon (const GLfloat &, const GLfloat &);
       virtual void draw (const vertex&, const rgbcolor&) const override;
       virtual void show (ostream&) const override;
 };

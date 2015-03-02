@@ -66,25 +66,47 @@ void window::keyboard (GLubyte key, int x, int y) {
          break;
       case 'H': case 'h':
          //move_selected_object (
-         window::objects[selected_obj].move(-4, 0);
+         if (window::objects[selected_obj].left_bound(0)) 
+            window::objects[selected_obj].move(window::width, 0);
+         else
+            window::objects[selected_obj].move(-1, 0);
          break;
       case 'J': case 'j':
+         if (window::objects[selected_obj].down_bound(0)) 
+            window::objects[selected_obj].move(0, window::height);
          //move_selected_object (
-         window::objects[selected_obj].move(0, -4);
+         else
+            window::objects[selected_obj].move(0, -1);
          break;
       case 'K': case 'k':
          //move_selected_object (
-         window::objects[selected_obj].move(0, 4);
+         if (window::objects[selected_obj].up_bound(window::height)) {
+               GLfloat floor = window::height;
+               window::objects[selected_obj].move(0, -floor);
+         }
+         else
+            window::objects[selected_obj].move(0, 1);
          break;
       case 'L': case 'l':
          //move_selected_object (
-         window::objects[selected_obj].move(4, 0);
+         if (window::objects[selected_obj].right_bound(window::width)) {
+               GLfloat left = window::width;
+               window::objects[selected_obj].move(-left, 0);
+         }
+         else
+            window::objects[selected_obj].move(1, 0);
          break;
       case 'N': case 'n': case SPACE: case TAB:
-         window::selected_obj += 1;
+         if (selected_obj != window::objects.size() - 1)
+            window::selected_obj += 1;
+         else
+            window::selected_obj = 0;
          break;
       case 'P': case 'p': case BS:
-         window::selected_obj -= 1;
+         if (selected_obj != 0)
+            window::selected_obj -= 1;
+         else
+            window::selected_obj = objects.size() - 1;
          break;
       case '0'...'9':
          //select_object (key - '0');
