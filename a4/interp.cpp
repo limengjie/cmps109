@@ -18,6 +18,7 @@ unordered_map<string,interpreter::interpreterfn>
 interpreter::interp_map {
    {"define" , &interpreter::do_define },
    {"draw"   , &interpreter::do_draw   },
+   //{"moveby" , &interpreter::do_moveby },
 };
 
 unordered_map<string,interpreter::factoryfn>
@@ -58,10 +59,18 @@ void interpreter::interpret (const parameters& params) {
    DEBUGF ('i', params);
    param begin = params.cbegin();
    string command = *begin;
-   auto itor = interp_map.find (command);
-   if (itor == interp_map.end()) throw runtime_error ("syntax error");
-   interpreterfn func = itor->second;
-   func (++begin, params.cend());
+   if (command == "moveby") {
+      cout << "call moveby\n";
+      int pix = stoi(*(++begin));
+      cout << "pixel : " << pix << endl;
+      window::set_pixel(pix);
+   }
+   else {
+      auto itor = interp_map.find (command);
+      if (itor == interp_map.end()) throw runtime_error ("syntax error");
+      interpreterfn func = itor->second;
+      func (++begin, params.cend());
+   }
 }
 
 void interpreter::do_define (param begin, param end) {
@@ -89,6 +98,10 @@ void interpreter::do_draw (param begin, param end) {
    window::push_back(obj);
    //itor->second->draw (where, color);
 }
+
+//void interpreter::do_moveby (int pix) {
+   //window::set_pixel(pix);
+//}
 
 shape_ptr interpreter::make_shape (param begin, param end) {
    DEBUGF ('f', range (begin, end));

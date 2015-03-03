@@ -10,6 +10,7 @@ using namespace std;
 
 int window::width = 640; // in pixels
 int window::height = 480; // in pixels
+GLfloat window::pixel = 4;
 vector<object> window::objects;
 size_t window::selected_obj = 0;
 mouse window::mus;
@@ -66,35 +67,41 @@ void window::keyboard (GLubyte key, int x, int y) {
          break;
       case 'H': case 'h':
          //move_selected_object (
-         if (window::objects[selected_obj].left_bound(0)) 
+         if (window::objects[selected_obj].left_bound(0 + window::pixel)) 
             window::objects[selected_obj].move(window::width, 0);
-         else
-            window::objects[selected_obj].move(-1, 0);
+         else {
+            GLfloat unit0 = window::pixel;
+            window::objects[selected_obj].move(-unit0, 0);
+         }
          break;
       case 'J': case 'j':
-         if (window::objects[selected_obj].down_bound(0)) 
+         if (window::objects[selected_obj].down_bound(0 + window::pixel)) 
             window::objects[selected_obj].move(0, window::height);
          //move_selected_object (
-         else
-            window::objects[selected_obj].move(0, -1);
+         else {
+            GLfloat unit1 = window::pixel;
+            window::objects[selected_obj].move(0, -unit1);
+         }
          break;
       case 'K': case 'k':
          //move_selected_object (
-         if (window::objects[selected_obj].up_bound(window::height)) {
+         if (window::objects[selected_obj].up_bound
+               (window::height-window::pixel)) {
                GLfloat floor = window::height;
                window::objects[selected_obj].move(0, -floor);
          }
          else
-            window::objects[selected_obj].move(0, 1);
+            window::objects[selected_obj].move(0, window::pixel);
          break;
       case 'L': case 'l':
          //move_selected_object (
-         if (window::objects[selected_obj].right_bound(window::width)) {
+         if (window::objects[selected_obj].right_bound
+               (window::width - window::pixel)) {
                GLfloat left = window::width;
                window::objects[selected_obj].move(-left, 0);
          }
          else
-            window::objects[selected_obj].move(1, 0);
+            window::objects[selected_obj].move(window::pixel, 0);
          break;
       case 'N': case 'n': case SPACE: case TAB:
          if (selected_obj != window::objects.size() - 1)

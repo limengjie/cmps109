@@ -23,3 +23,4 @@ define eq0 equilateral 180
 draw cyan eq0 400 100
 define txt text Fixed-9x15 hello world !
 draw gold txt 400 400 
+moveby 15

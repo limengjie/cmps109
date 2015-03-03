@@ -22,10 +22,10 @@ class object {
       object(shared_ptr<shape> sp, vertex cen, 
             rgbcolor col): pshape(sp), 
             center(cen), color(col) {}
-      bool left_bound(GLfloat l) { return center.xpos == l; }
-      bool right_bound(GLfloat r) { return center.xpos == r; }
-      bool up_bound(GLfloat u) { return center.ypos == u; }
-      bool down_bound(GLfloat d) { return center.ypos == d; }
+      bool left_bound(GLfloat l) { return center.xpos < l; }
+      bool right_bound(GLfloat r) { return center.xpos > r; }
+      bool up_bound(GLfloat u) { return center.ypos>u; }
+      bool down_bound(GLfloat d) { return center.ypos<d; }
       void draw() { pshape->draw (center, color); }
       void move (GLfloat delta_x, GLfloat delta_y) {
          center.xpos += delta_x;
@@ -57,6 +57,7 @@ class window {
       static vector<object> objects;
       static size_t selected_obj;
       static mouse mus;
+      static GLfloat pixel;
    private:
       static void close();
       static void entry (int mouse_entered);
@@ -75,6 +76,7 @@ class window {
       static void setwidth (int width_) { width = width_; }
       static void setheight (int height_) { height = height_; }
       static void main();
+      static void set_pixel(int pix) { pixel = pix;}
 };
 
 #endif
