@@ -104,7 +104,7 @@ class polygon: public shape {
       vertex_list vertices;
    public:
       polygon (const vertex_list& vertices);
-      polygon (const GLfloat &, const GLfloat &);
+      //polygon (const GLfloat &, const GLfloat &);
       virtual void draw (const vertex&, const rgbcolor&) const override;
       virtual void show (ostream&) const override;
 };
@@ -116,17 +116,37 @@ class polygon: public shape {
 
 class rectangle: public polygon {
    public:
-      rectangle (GLfloat width, GLfloat height);
+      rectangle (const vertex_list & vertices);
 };
 
 class square: public rectangle {
    public:
-      square (GLfloat width);
+      square (const vertex_list & vertices);
 };
 
 class diamond: public polygon {
    public:
-      diamond (const GLfloat width, const GLfloat height);
+      diamond (const vertex_list & vertice);
+};
+
+class triangle: public polygon {
+   public:
+      triangle (const vertex_list& vertices);
+};
+
+class right_triangle: public triangle {
+   public:
+      right_triangle (const vertex_list& vertices);
+};
+
+class isosceles: public triangle {
+   public:
+      isosceles (const vertex_list& vertices);
+};
+
+class equilateral: public triangle {
+   public:
+      equilateral (const vertex_list& vertices);
 };
 
 ostream& operator<< (ostream& out, const shape&);

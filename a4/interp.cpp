@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 #include <GL/freeglut.h>
@@ -20,12 +21,17 @@ interpreter::interp_map {
 
 unordered_map<string,interpreter::factoryfn>
 interpreter::factory_map {
-   {"text"     , &interpreter::make_text     },
-   {"ellipse"  , &interpreter::make_ellipse  },
-   {"circle"   , &interpreter::make_circle   },
-   {"polygon"  , &interpreter::make_polygon  },
-   {"rectangle", &interpreter::make_rectangle},
-   {"square"   , &interpreter::make_square   },
+   {"text"           , &interpreter::make_text           },
+   {"ellipse"        , &interpreter::make_ellipse        },
+   {"circle"         , &interpreter::make_circle         },
+   {"polygon"        , &interpreter::make_polygon        },
+   {"rectangle"      , &interpreter::make_rectangle      },
+   {"square"         , &interpreter::make_square         },
+   {"diamond"        , &interpreter::make_diamond        },
+   {"triangle"       , &interpreter::make_triangle       },
+   {"right_triangle" , &interpreter::make_right_triangle },
+   {"isosceles"      , &interpreter::make_isosceles      },
+   {"equilateral"    , &interpreter::make_equilateral    },
 };
 
 interpreter::shape_map interpreter::objmap;
@@ -51,6 +57,9 @@ void interpreter::do_define (param begin, param end) {
    DEBUGF ('f', range (begin, end));
    string name = *begin;
    objmap.emplace (name, make_shape (++begin, end));
+   //for (; begin != end; ++begin) //del
+      //cout << *begin << "\t"; //del
+   //cout << endl; //del
 }
 
 
@@ -63,7 +72,6 @@ void interpreter::do_draw (param begin, param end) {
       throw runtime_error (name + ": no such shape");
    }
    rgbcolor color {begin[0]};
-   cout << "&&&&&" << begin[2] << " $$$$ " << begin[3] << endl;
    vertex where {from_string<GLfloat> (begin[2]),
                  from_string<GLfloat> (begin[3])};
    object obj = object(itor->second, where, color);
@@ -93,7 +101,7 @@ shape_ptr interpreter::make_text (param begin, param end) {
 shape_ptr interpreter::make_ellipse (param begin, param end) {
    DEBUGF ('f', range (begin, end));
    return make_shared<ellipse> (from_string<GLfloat>(*begin),
-                             from_string<GLfloat>(*(--end)));
+			     from_string<GLfloat>(*(--end)));
 }
 
 shape_ptr interpreter::make_circle (param begin, param end) {
@@ -106,7 +114,6 @@ shape_ptr interpreter::make_polygon (param begin, param end) {
    vertex_list vl;
    vertex vtx;
    int flipflop = true;
-   cout << "**********" << begin[0] << endl;
    for ( ; begin != end; ++begin) {
       if(flipflop) {
 	 vtx.xpos = from_string<GLfloat>(*begin);
@@ -123,12 +130,124 @@ shape_ptr interpreter::make_polygon (param begin, param end) {
 
 shape_ptr interpreter::make_rectangle (param begin, param end) {
    DEBUGF ('f', range (begin, end));
-   return make_shared<rectangle> (from_string<GLfloat>(*begin),
-                             from_string<GLfloat>(*(--end)));
+   vertex_list vl;
+   vertex rect[4];
+   rect[0].xpos = 0;
+   rect[0].ypos = 0;
+   rect[1].xpos = 0;
+   rect[1].ypos = from_string<GLfloat>(*(--end));
+   rect[2].xpos = from_string<GLfloat>(*begin);
+   rect[2].ypos = from_string<GLfloat>(*end);
+   rect[3].xpos = from_string<GLfloat>(*begin);
+   rect[3].ypos = 0;
+   for (size_t i = 0; i < 4; ++i)
+      vl.push_back(rect[i]);
+   return make_shared<rectangle> (vl);
 }
 
 shape_ptr interpreter::make_square (param begin, param end) {
    DEBUGF ('f', range (begin, end));
-   return make_shared<square> (from_string<GLfloat>(*begin));
+   vertex_list vl;
+   vertex rect[4];
+   rect[0].xpos = 0;
+   rect[0].ypos = 0;
+   rect[1].xpos = 0;
+   rect[1].ypos = from_string<GLfloat>(*begin);
+   rect[2].xpos = from_string<GLfloat>(*begin);
+   rect[2].ypos = from_string<GLfloat>(*begin);
+   rect[3].xpos = from_string<GLfloat>(*begin);
+   rect[3].ypos = 0;
+   for (size_t i = 0; i < 4; ++i)
+      vl.push_back(rect[i]);
+   return make_shared<square> (vl);
 }
 
+shape_ptr interpreter::make_diamond (param begin, param end) {
+   vertex_list vl;
+   vertex diam[4];
+   diam[0].xpos = 0;
+   diam[0].ypos = 0;
+   diam[1].xpos = from_string<GLfloat>(*(--end)) * tan(M_PI/6);
+   diam[1].ypos = from_string<GLfloat>(*end);
+   diam[2].xpos = from_string<GLfloat>(*begin);
+   diam[2].ypos = from_string<GLfloat>(*end);
+   diam[3].xpos = from_string<GLfloat>(*end)*tan(M_PI/6)*2;
+   diam[3].ypos = 0;
+   for (size_t i = 0; i < 4; ++i)
+      vl.push_back(diam[i]);
+   return make_shared<diamond> (vl);
+}
+
+shape_ptr interpreter::make_triangle (param begin, param end) {
+   DEBUGF ('f', range (begin, end));
+   vertex_list vl;
+   vertex vtx;
+   int flipflop = true;
+   for (size_t i = 0; begin != end, i < 6; ++begin, ++i) {
+      if(flipflop) {
+	 vtx.xpos = from_string<GLfloat>(*begin);
+	 flipflop = not flipflop;
+      }
+      else {
+	 vtx.ypos = from_string<GLfloat>(*begin);
+	 vl.push_back(vtx);
+	 flipflop = not flipflop;
+      }
+   }
+   return make_shared<triangle> (vl);
+}
+
+shape_ptr interpreter::make_right_triangle (param begin, param end) {
+   DEBUGF ('f', range (begin, end));
+   vertex_list vl;
+   vertex tri[3];
+   tri[0].xpos = 0;
+   tri[0].ypos = 0;
+   tri[1].xpos = 0;
+   tri[1].ypos = from_string<GLfloat>(*(--end));
+   tri[2].xpos = from_string<GLfloat>(*begin);
+   tri[2].ypos = 0;
+   for (size_t i = 0; i < 3; ++i) {
+      vl.push_back(tri[i]);
+      cout << tri[i].xpos << " , " << tri[i].ypos << endl;
+   }
+   return make_shared<right_triangle> (vl);
+}
+
+shape_ptr interpreter::make_isosceles (param begin, param end) {
+   DEBUGF ('f', range (begin, end));
+   vertex_list vl;
+   vertex vtx;
+   int flipflop = true;
+   for ( ; begin != end; ++begin) {
+      if(flipflop) {
+	 vtx.xpos = from_string<GLfloat>(*begin);
+	 flipflop = not flipflop;
+      }
+      else {
+	 vtx.ypos = from_string<GLfloat>(*begin);
+	 vl.push_back(vtx);
+	 flipflop = not flipflop;
+      }
+   }
+   return make_shared<isosceles> (vl);
+}
+
+shape_ptr interpreter::make_equilateral (param begin, param end) {
+   DEBUGF ('f', range (begin, end));
+   vertex_list vl;
+   vertex vtx;
+   int flipflop = true;
+   for ( ; begin != end; ++begin) {
+      if(flipflop) {
+	 vtx.xpos = from_string<GLfloat>(*begin);
+	 flipflop = not flipflop;
+      }
+      else {
+	 vtx.ypos = from_string<GLfloat>(*begin);
+	 vl.push_back(vtx);
+	 flipflop = not flipflop;
+      }
+   }
+   return make_shared<equilateral> (vl);
+}

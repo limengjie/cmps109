@@ -67,32 +67,60 @@ polygon::polygon (const vertex_list& vertices): vertices(vertices) {
       //cout << "{ " << it->xpos << " , " << it->ypos << " }" << endl;
 }
 
-polygon::polygon (const GLfloat & width, const GLfloat & height) {
-   vertex vt[4];
-   vt[0].xpos = 0;
-   vt[0].ypos = 0;
-   vt[1].xpos = 0;
-   vt[1].ypos = height;
-   vt[2].xpos = width;
-   vt[2].ypos = height;
-   vt[3].xpos = width;
-   vt[3].ypos = 0;
-   for (size_t i = 0; i < 4; ++i) 
-      vertices.push_back(vt[i]);
-}
+//polygon::polygon (const GLfloat & width, const GLfloat & height) {
+   //if (vertices.size() == 3) {
+      //vertex tri[3];
+      //tri[0].xpos = 0;
+      //tri[0].ypos = 0;
+      //tri[1].xpos = width;
+      //tri[1].ypos = 0;
+      //tri[2].xpos = width / 2;
+      //tri[2].ypos = height;
+      //for (size_t i = 0; i < 3; ++i)
+         //vertices.push_back(tri[i]);
+   //}
+   //else {
+      //vertex rect[4];
+      //rect[0].xpos = 0;
+      //rect[0].ypos = 0;
+      //rect[1].xpos = 0;
+      //rect[1].ypos = height;
+      //rect[2].xpos = width;
+      //rect[2].ypos = height;
+      //rect[3].xpos = width;
+      //rect[3].ypos = 0;
+      //for (size_t i = 0; i < 4; ++i) 
+         //vertices.push_back(rect[i]);
+   //}
+//}
 
 
-rectangle::rectangle (GLfloat width, GLfloat height):
-            polygon(width, height) {
-   DEBUGF ('c', this << "(" << width << "," << height << ")");
+rectangle::rectangle (const vertex_list& vertices): 
+            polygon(vertices) {
+   //DEBUGF ('c', this << "(" << width << "," << height << ")");
    cout << "call rectangle\n";
    //cout << "rect para: " << width << " , " << height << endl;
 
 }
 
-square::square (GLfloat width): rectangle (width, width) {
+square::square (const vertex_list& vertices): rectangle (vertices) {
    DEBUGF ('c', this);
 }
+
+diamond::diamond (const vertex_list& vertices): polygon (vertices) {
+}
+
+triangle::triangle (const vertex_list& vertices): polygon (vertices) {
+}
+
+right_triangle::right_triangle (const vertex_list& vertices): 
+      triangle (vertices) {}
+
+isosceles::isosceles (const vertex_list& vertices): triangle (vertices) {
+}
+
+equilateral::equilateral (const vertex_list& vertices): 
+   triangle (vertices) {}
 
 void text::draw (const vertex& center, const rgbcolor& color) const {
    DEBUGF ('d', this << "(" << center << "," << color << ")");
@@ -120,10 +148,10 @@ void polygon::draw (const vertex& center, const rgbcolor& color) const {
    //cout << "av: " << aver_ver.xpos << " , " << aver_ver.ypos << endl;
    
    vertex_list vl = update_center(vertices, center);
-   auto it = vl.begin();
-   cout << "center: \n";
-   for ( ; it != vl.end(); ++it) 
-      cout << "{ " << it->xpos << " , " << it->ypos << " }" << endl;
+   //auto it = vl.begin();
+   //cout << "center: \n";
+   //for ( ; it != vl.end(); ++it) 
+      //cout << "{ " << it->xpos << " , " << it->ypos << " }" << endl;
    glBegin (GL_POLYGON);
    glColor3ubv (color.ubvec);
    for (size_t i = 0; i < vl.size(); ++i)
@@ -187,8 +215,5 @@ vertex_list update_center(const vertex_list & vl,
    }
    return res;
 }
-
-
-
 
 

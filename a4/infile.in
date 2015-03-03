@@ -5,11 +5,15 @@
 #draw firebrick c0 430 150
 #define c1 circle 120
 #draw orange c1 430 150
-define p0 polygon 0 50 0 100 100 100 100 0 0 0
-draw green p0 100 100
-define p1 polygon  0 100 200 100 200 0 0 0
-draw red p1 200 400
-define r0 rectangle 120 60
-draw yellow r0 300 100
-define s0 square 220
-draw blue s0 400 160
+#define p0 polygon 0 50 0 100 100 100 100 0 0 0
+#draw green p0 100 100
+#define r0 rectangle 120 60
+#draw yellow r0 300 100
+#define s0 square 220
+#draw blue s0 400 160
+#define d0 diamond 120 60
+#draw red d0 400 100
+define t0 triangle 0 0 180 0 40 130
+draw orange t0 400 300
+define rt right_triangle 150 75 
+draw aquamarine rt 300 100
