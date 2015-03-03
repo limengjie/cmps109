@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+
 using namespace std;
 
 #include <GL/freeglut.h>
@@ -32,7 +33,17 @@ interpreter::factory_map {
    {"right_triangle" , &interpreter::make_right_triangle },
    {"isosceles"      , &interpreter::make_isosceles      },
    {"equilateral"    , &interpreter::make_equilateral    },
+   //{"border"         , &interpreter::make_border         },
 };
+static unordered_map<string,void*> fontcode {
+   {"Fixed-8x13"    , GLUT_BITMAP_8_BY_13       },
+   {"Fixed-9x15"    , GLUT_BITMAP_9_BY_15       },
+   {"Helvetica-10"  , GLUT_BITMAP_HELVETICA_10  },
+   {"Helvetica-12"  , GLUT_BITMAP_HELVETICA_12  },
+   {"Helvetica-18"  , GLUT_BITMAP_HELVETICA_18  },
+   {"Times-Roman-10", GLUT_BITMAP_TIMES_ROMAN_10},
+   {"Times-Roman-24", GLUT_BITMAP_TIMES_ROMAN_24},
+ };  
 
 interpreter::shape_map interpreter::objmap;
 
@@ -92,10 +103,17 @@ shape_ptr interpreter::make_shape (param begin, param end) {
 
 shape_ptr interpreter::make_text (param begin, param end) {
    DEBUGF ('f', range (begin, end));
+   string type = *begin++;
+   string str;
+   auto itor = fontcode.find(type);
+   if (itor == fontcode.end()) {
+      throw runtime_error (type + ": no such font");
+   }
+   void * font = itor->second;
    while (begin != end)
-	cout << *begin++ << "\t";
-   cout << endl;
-   return make_shared<text> (nullptr, string());
+	str += (*begin++) + " ";
+   //cout << str << endl;
+   return make_shared<text> (font, str);
 }
 
 shape_ptr interpreter::make_ellipse (param begin, param end) {
@@ -209,7 +227,7 @@ shape_ptr interpreter::make_right_triangle (param begin, param end) {
    tri[2].ypos = 0;
    for (size_t i = 0; i < 3; ++i) {
       vl.push_back(tri[i]);
-      cout << tri[i].xpos << " , " << tri[i].ypos << endl;
+      //cout << tri[i].xpos << " , " << tri[i].ypos << endl;
    }
    return make_shared<right_triangle> (vl);
 }
@@ -217,18 +235,16 @@ shape_ptr interpreter::make_right_triangle (param begin, param end) {
 shape_ptr interpreter::make_isosceles (param begin, param end) {
    DEBUGF ('f', range (begin, end));
    vertex_list vl;
-   vertex vtx;
-   int flipflop = true;
-   for ( ; begin != end; ++begin) {
-      if(flipflop) {
-	 vtx.xpos = from_string<GLfloat>(*begin);
-	 flipflop = not flipflop;
-      }
-      else {
-	 vtx.ypos = from_string<GLfloat>(*begin);
-	 vl.push_back(vtx);
-	 flipflop = not flipflop;
-      }
+   vertex tri[3];
+   tri[0].xpos = 0;
+   tri[0].ypos = 0;
+   tri[1].xpos = from_string<GLfloat>(*begin) / 2;
+   tri[1].ypos = from_string<GLfloat>(*(--end));
+   tri[2].xpos = from_string<GLfloat>(*begin);
+   tri[2].ypos = 0;
+   for (size_t i = 0; i < 3; ++i) {
+      vl.push_back(tri[i]);
+   //   cout << tri[i].xpos << " , " << tri[i].ypos << endl;
    }
    return make_shared<isosceles> (vl);
 }
@@ -236,18 +252,14 @@ shape_ptr interpreter::make_isosceles (param begin, param end) {
 shape_ptr interpreter::make_equilateral (param begin, param end) {
    DEBUGF ('f', range (begin, end));
    vertex_list vl;
-   vertex vtx;
-   int flipflop = true;
-   for ( ; begin != end; ++begin) {
-      if(flipflop) {
-	 vtx.xpos = from_string<GLfloat>(*begin);
-	 flipflop = not flipflop;
-      }
-      else {
-	 vtx.ypos = from_string<GLfloat>(*begin);
-	 vl.push_back(vtx);
-	 flipflop = not flipflop;
-      }
-   }
+   vertex tri[3];
+   tri[0].xpos = 0;
+   tri[0].ypos = 0;
+   tri[1].xpos = from_string<GLfloat>(*begin) / 2;
+   tri[1].ypos = from_string<GLfloat>(*begin) * sin(M_PI/3);
+   tri[2].xpos = from_string<GLfloat>(*begin);
+   tri[2].ypos = 0;
+   for (size_t i = 0; i < 3; ++i) 
+      vl.push_back(tri[i]);
    return make_shared<equilateral> (vl);
 }

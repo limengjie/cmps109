@@ -124,6 +124,11 @@ equilateral::equilateral (const vertex_list& vertices):
 
 void text::draw (const vertex& center, const rgbcolor& color) const {
    DEBUGF ('d', this << "(" << center << "," << color << ")");
+   auto text = reinterpret_cast<const GLubyte*> (textdata.c_str());
+   glColor3ubv (color.ubvec);
+   glRasterPos2f (center.xpos, center.ypos);
+   glutBitmapString (glut_bitmap_font, text);
+   glutSwapBuffers();
 }
 
 void ellipse::draw (const vertex& center, const rgbcolor& color) const {
