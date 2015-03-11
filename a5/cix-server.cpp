@@ -1,9 +1,11 @@
 // $Id: cix-server.cpp,v 1.7 2014-07-25 12:12:51-07 - - $
 
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 #include <libgen.h>
+#include <sys/stat.h>
 
 #include "cix_protocol.h"
 #include "logstream.h"
@@ -34,6 +36,72 @@ void reply_ls (accepted_socket& client_sock, cix_header& header) {
    send_packet (client_sock, &header, sizeof header);
    send_packet (client_sock, ls_output.c_str(), ls_output.size());
    log << "sent " << ls_output.size() << " bytes" << endl;
+   pclose(ls_pipe);
+}
+
+void reply_put (accepted_socket& client_sock, cix_header& header) {
+   char buffer[header.cix_nbytes + 1];
+   recv_packet (client_sock, buffer, header.cix_nbytes);
+   log << "received " << header.cix_nbytes << " bytes \n";
+   buffer[header.cix_nbytes] = '\0';
+   //cout << "from server: " << buffer;
+   //write from buffer to file
+   string filename(header.cix_filename);
+   filename = "server_" + filename;
+   //cout << "filename is : " << f ilename << endl;
+   //
+   ofstream myfile;
+   myfile.open(filename);
+   myfile << buffer;
+   myfile.close();
+   //reply to client
+   string put_out = "201 OK\n";
+   header.cix_command = CIX_ACK;
+   header.cix_nbytes = put_out.size();
+   memset (header.cix_filename, 0, CIX_FILENAME_SIZE);
+   log << "sending header " << header << endl;
+   send_packet (client_sock, &header, sizeof header);
+   send_packet (client_sock, put_out.c_str(), put_out.size());
+   log << "sent " << put_out.size() << " bytes" << endl;
+}
+
+void reply_get (accepted_socket& client_sock, cix_header& header) {
+   string filename(header.cix_filename);
+   //write from file to buffer
+   FILE * pfile;
+   char buff[5000];
+   pfile = fopen(filename.c_str(), "r");
+   if (pfile == nullptr)
+      perror("404 not found");
+   else
+      while (! feof(pfile)) {
+         if (fgets(buff, 5000, pfile) == NULL)
+            break;
+      }
+   fclose(pfile);
+   //get file size
+   struct stat st;
+   stat (filename.c_str(), &st);
+   size_t size = st.st_size;
+   header.cix_nbytes = size;         
+   header.cix_command = CIX_FILE;
+   log << "sending header " << header << endl;
+   send_packet (client_sock, &header, sizeof header);
+   send_packet (client_sock, buff, header.cix_nbytes);
+}
+
+void reply_rm (accepted_socket& client_sock, cix_header& header) {
+   string filename(header.cix_filename);
+   unlink(filename.c_str());
+   //reply to client
+   string rm_out = "delete successful\n";
+   header.cix_command = CIX_ACK;
+   header.cix_nbytes = rm_out.size();
+   memset (header.cix_filename, 0, CIX_FILENAME_SIZE);
+   log << "sending header " << header << endl;
+   send_packet (client_sock, &header, sizeof header);
+   send_packet (client_sock, rm_out.c_str(), rm_out.size());
+   log << "sent " << rm_out.size() << " bytes" << endl;
 }
 
 
@@ -65,6 +133,15 @@ int main (int argc, char** argv) {
          switch (header.cix_command) {
             case CIX_LS:
                reply_ls (client_sock, header);
+               break;
+            case CIX_PUT:
+               reply_put (client_sock, header);
+               break;
+            case CIX_GET:
+               reply_get (client_sock, header);
+               break;
+            case CIX_RM:
+               reply_rm (client_sock, header);
                break;
             default:
                log << "invalid header from client" << endl;

@@ -22,7 +22,7 @@ void fork_cixserver (server_socket& server, accepted_socket& accept) {
       server.close();
       string sock_fd = accept.to_string_socket_fd();
       log << "execlp cixserver (fd" << sock_fd << ")" << endl;
-      execlp ("cix-server", "cix-server", sock_fd.c_str(), nullptr);
+      execlp ("./cix-server", "cix-server", sock_fd.c_str(), nullptr);
       // Can't get here?!
       log << "cix-server: execlp failed: " << strerror (errno) << endl;
       throw cix_exit();
