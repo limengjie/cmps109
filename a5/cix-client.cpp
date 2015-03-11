@@ -28,6 +28,14 @@ unordered_map<string,cix_command> command_map {
    {"rm"  , CIX_RM  },
 };
 
+string rename(const string & name) {
+   string new_name;
+   unsigned found = name.find_last_of("/");
+   new_name = name.substr(found+1);
+
+   return new_name;
+}
+
 void cix_help() {
    static vector<string> help = {
       "exit         - Exit the program.  Equivalent to EOF.",
@@ -122,10 +130,11 @@ void cix_get (client_socket& server, string filename) {
       recv_packet (server, buffer, header.cix_nbytes);
       log << "received " << header.cix_nbytes << " bytes \n";
       buffer[header.cix_nbytes] = '\0';
-      //cout << "from client: " << buffer;
       //write from buffer to file
       string filename(header.cix_filename);
+      filename = rename(filename);
       filename = "client_" + filename;
+      //cout << "get from server: " << buffer;
       //cout << "filename is : " << filename << endl;
       ofstream myfile;
       myfile.open(filename);

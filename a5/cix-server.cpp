@@ -14,6 +14,14 @@ using namespace std;
 
 logstream log (cout);
 
+string rename(const string & name) {
+   string new_name;
+   unsigned found = name.find_last_of("/");
+   new_name = name.substr(found + 1);
+
+   return new_name;
+}
+
 void reply_ls (accepted_socket& client_sock, cix_header& header) {
    FILE* ls_pipe = popen ("ls -l", "r");
    if (ls_pipe == NULL) {
@@ -47,6 +55,7 @@ void reply_put (accepted_socket& client_sock, cix_header& header) {
    //cout << "from server: " << buffer;
    //write from buffer to file
    string filename(header.cix_filename);
+   filename = rename(filename);
    filename = "server_" + filename;
    //cout << "filename is : " << f ilename << endl;
    //
@@ -67,6 +76,7 @@ void reply_put (accepted_socket& client_sock, cix_header& header) {
 
 void reply_get (accepted_socket& client_sock, cix_header& header) {
    string filename(header.cix_filename);
+   cout << filename << endl;
    //write from file to buffer
    FILE * pfile;
    char buff[5000];
