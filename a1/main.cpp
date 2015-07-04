@@ -13,7 +13,6 @@ using namespace std;
 #include "inode.h"
 #include "util.h"
 
-void init_root_dir(inode_state &);
 //
 // scan_options
 //    Options analysis:  The only option is -Dflags. 
@@ -39,6 +38,7 @@ void scan_options (int argc, char** argv) {
    }
 }
 
+
 //
 // main -
 //    Main program which loops reading commands until end of file.
@@ -52,11 +52,9 @@ int main (int argc, char** argv) {
    scan_options (argc, argv);
    bool need_echo = want_echo();
    commands cmdmap;
-   string prompt = "%";
    inode_state state;
-   init_root_dir(state);
-   //cout << state << endl;
-
+   string prompt = state.get_prompt();
+   cout << state;
    try {
       for (;;) {
          try {
@@ -94,15 +92,3 @@ int main (int argc, char** argv) {
    return exit_status_message();
 }
 
-void init_root_dir(inode_state & is) {
-   inode_ptr proot = (inode_ptr) new inode(DIR_INODE);
-   map<string, inode_ptr> m_root;
-   m_root["."] = proot;
-   m_root[".."] = proot;
-   directory_ptr dir_root_ptr = (directory_ptr) new directory;
-   dir_root_ptr->set_dir(m_root, "/");
-   proot->set_cts((file_base_ptr) dir_root_ptr);
-   is.set_cwd(proot);
-   is.set_root(proot);
-   is.add_q("/", proot);
-}

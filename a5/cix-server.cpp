@@ -49,22 +49,24 @@ void reply_ls (accepted_socket& client_sock, cix_header& header) {
 
 void reply_put (accepted_socket& client_sock, cix_header& header) {
    char buffer[header.cix_nbytes + 1];
-   recv_packet (client_sock, buffer, header.cix_nbytes);
+   if (header.cix_nbytes != 0) {
+      recv_packet (client_sock, buffer, header.cix_nbytes);
+   }
    log << "received " << header.cix_nbytes << " bytes \n";
    buffer[header.cix_nbytes] = '\0';
    //cout << "from server: " << buffer;
    //write from buffer to file
    string filename(header.cix_filename);
    filename = rename(filename);
+   string put_out;
    filename = "server_" + filename;
-   //cout << "filename is : " << f ilename << endl;
-   //
    ofstream myfile;
    myfile.open(filename);
-   myfile << buffer;
+   if (header.cix_nbytes != 0) 
+      myfile << buffer;
    myfile.close();
    //reply to client
-   string put_out = "201 OK\n";
+   put_out = "201 OK\n";
    header.cix_command = CIX_ACK;
    header.cix_nbytes = put_out.size();
    memset (header.cix_filename, 0, CIX_FILENAME_SIZE);
@@ -76,42 +78,73 @@ void reply_put (accepted_socket& client_sock, cix_header& header) {
 
 void reply_get (accepted_socket& client_sock, cix_header& header) {
    string filename(header.cix_filename);
-   cout << filename << endl;
+   //cout << filename << endl;
    //write from file to buffer
    FILE * pfile;
-   char buff[5000];
+   //char buff[5000];
    pfile = fopen(filename.c_str(), "r");
-   if (pfile == nullptr)
-      perror("404 not found");
-   else
-      while (! feof(pfile)) {
-         if (fgets(buff, 5000, pfile) == NULL)
-            break;
+   if (pfile == nullptr) {
+      cout << "404 not found\n";
+      header.cix_command = CIX_NAK;
+      string get_out = "404 not found\n";
+      header.cix_nbytes = get_out.size();         
+      log << "sending header " << header << endl;
+      send_packet (client_sock, &header, sizeof header);
+      send_packet (client_sock, get_out.c_str(), get_out.size());
+      log << "sent " << get_out.size() << " bytes" << endl;
+   }
+   else {
+      fclose(pfile);
+      //get file size
+      struct stat st;
+      if(stat (filename.c_str(), &st) == -1)
+         cout << "error num: " << errno << endl;
+      size_t size = st.st_size;
+      header.cix_nbytes = size;
+      char * memblock;
+      memblock = new char [size];
+      ifstream file(filename, ios::in|ios::binary|ios::ate);
+      if (file.is_open()) {
+         file.seekg(0, ios::beg);
+         file.read(memblock, size);
+         file.close();
       }
-   fclose(pfile);
-   //get file size
-   struct stat st;
-   stat (filename.c_str(), &st);
-   size_t size = st.st_size;
-   header.cix_nbytes = size;         
-   header.cix_command = CIX_FILE;
-   log << "sending header " << header << endl;
-   send_packet (client_sock, &header, sizeof header);
-   send_packet (client_sock, buff, header.cix_nbytes);
+      header.cix_nbytes = size;         
+      header.cix_command = CIX_FILE;
+      log << "sending header " << header << endl;
+      send_packet (client_sock, &header, sizeof header);
+      if (size != 0)
+         send_packet (client_sock, memblock, header.cix_nbytes);
+      delete [] memblock;
+   }
 }
 
 void reply_rm (accepted_socket& client_sock, cix_header& header) {
    string filename(header.cix_filename);
-   unlink(filename.c_str());
-   //reply to client
-   string rm_out = "delete successful\n";
-   header.cix_command = CIX_ACK;
-   header.cix_nbytes = rm_out.size();
-   memset (header.cix_filename, 0, CIX_FILENAME_SIZE);
-   log << "sending header " << header << endl;
-   send_packet (client_sock, &header, sizeof header);
-   send_packet (client_sock, rm_out.c_str(), rm_out.size());
-   log << "sent " << rm_out.size() << " bytes" << endl;
+   FILE * pfile;
+   pfile = fopen(filename.c_str(), "r");
+   if (pfile == nullptr) {
+      cout << "404 not found\n";
+      header.cix_command = CIX_NAK;
+      string get_out = "404 not found\n";
+      header.cix_nbytes = get_out.size();
+      log << "sending header " << header << endl;
+      send_packet (client_sock, &header, sizeof header);
+      send_packet (client_sock, get_out.c_str(), get_out.size());
+      log << "sent " << get_out.size() << " bytes" << endl;
+   }
+   else {
+      unlink(filename.c_str());
+      //reply to client
+      string rm_out = "delete successful\n";
+      header.cix_command = CIX_ACK;
+      header.cix_nbytes = rm_out.size();
+      memset (header.cix_filename, 0, CIX_FILENAME_SIZE);
+      log << "sending header " << header << endl;
+      send_packet (client_sock, &header, sizeof header);
+      send_packet (client_sock, rm_out.c_str(), rm_out.size());
+      log << "sent " << rm_out.size() << " bytes" << endl;
+   }
 }
 
 

@@ -68,50 +68,73 @@ void cix_ls (client_socket& server) {
 }
 
 void cix_put (client_socket& server, string filename) {
+   if (filename.size() > 58) {
+      cout << "The file name is too long!\n";
+      return;
+   }
+   if (filename.find_first_of("/") != string::npos) {
+      cout << "illegal filename\n";
+      return;
+   }
    cix_header header;
    header.cix_command = CIX_PUT;
    //get file name
    for (size_t i = 0; i < filename.size(); ++i) {
       header.cix_filename[i] = filename[i];
    }
-   //get file size
-   struct stat st;
-   stat(filename.c_str(), &st);
-   size_t size = st.st_size;
-   //cout << "size is " << size << endl;
-   header.cix_nbytes = size;
+   char * memblock;
    //write from file to buffer
    FILE *pfile;
-   char buff[5000];
+   //char buff[5000];
    pfile = fopen(filename.c_str(), "r");
-   if (pfile == nullptr)
-      perror("no such file");
-   else
-      while (! feof(pfile)) {
-         if ( fgets(buff, 5000, pfile) == NULL)
-            break;
+   if (pfile == nullptr) {
+      //perror("no such file");
+      cout << "no such file\n";
+   }
+   else {
+      fclose(pfile);
+      //get file size
+      struct stat st;
+      if (stat(filename.c_str(), &st) == -1)
+         cout << "error number: " << errno << endl;
+      size_t size = st.st_size;
+      //cout << "size is " << size << endl;
+      header.cix_nbytes = size;
+      memblock = new char [size];
+      ifstream file (filename, ios::in|ios::binary|ios::ate);
+      if (file.is_open()) {
+         file.seekg(0, ios::beg);
+         file.read(memblock, size);
+         file.close();
       }
-   fclose(pfile);
-   //cout << "from buffer: " << buff;
-   //cout <<"header.cix_fn: " << header.cix_filename << endl;
-   log << "sending header " << header << endl;
-   send_packet (server, &header, sizeof header);
-   send_packet (server, buff, header.cix_nbytes);
-   recv_packet (server, &header, sizeof header);
-   log << "received header " << header << endl;
-   if (header.cix_command != CIX_ACK) {
-      log << "sent CIX_ACK, server did not return CIX_ACK" << endl;
-      log << "server returned " << header << endl;
-   }else {
-      char buffer[header.cix_nbytes + 1];
-      recv_packet (server, buffer, header.cix_nbytes);
-      log << "received " << header.cix_nbytes << " bytes" << endl;
-      buffer[header.cix_nbytes] = '\0';
-      cout << buffer;
+      log << "sending header " << header << endl;
+      send_packet (server, &header, sizeof header);
+      send_packet (server, memblock, header.cix_nbytes);
+      delete [] memblock;
+      recv_packet (server, &header, sizeof header);
+      log << "received header " << header << endl;
+      if (header.cix_command != CIX_ACK) {
+         log << "sent CIX_ACK, server did not return CIX_ACK" << endl;
+         log << "server returned " << header << endl;
+      }else {
+         char buffer[header.cix_nbytes + 1];
+         recv_packet (server, buffer, header.cix_nbytes);
+         log << "received " << header.cix_nbytes << " bytes" << endl;
+         buffer[header.cix_nbytes] = '\0';
+         cout << buffer;
+      }
    }
 }
 
 void cix_get (client_socket& server, string filename) { 
+   if (filename.size() > 58) {
+      cout << "The file name is too long!\n";
+      return;
+   }
+   if (filename.find_first_of("/") != string::npos) {
+      cout << "illegal filename\n";
+      return;
+   }
    cix_header header;
    header.cix_command = CIX_GET;
    //get file name
@@ -123,11 +146,22 @@ void cix_get (client_socket& server, string filename) {
    recv_packet (server, &header, sizeof header);
    log << "received header " << header << endl;
    if (header.cix_command != CIX_FILE) {
-      log << "sent CIX_GET, server did not return CIX_FILE" << endl;
-      log << "server returned " << header << endl;
+      if (header.cix_command == CIX_NAK) {
+         char buffer[header.cix_nbytes + 1];
+         recv_packet (server, buffer, header.cix_nbytes);
+         log << "received " << header.cix_nbytes << " bytes" << endl;
+         buffer[header.cix_nbytes] = '\0';
+         cout << buffer;
+         return;
+      }
+      else {
+         log << "sent CIX_GET, server did not return CIX_FILE" << endl;
+         log << "server returned " << header << endl;
+      }
    }else {
       char buffer[header.cix_nbytes + 1];
-      recv_packet (server, buffer, header.cix_nbytes);
+      if (header.cix_nbytes != 0)
+         recv_packet (server, buffer, header.cix_nbytes);
       log << "received " << header.cix_nbytes << " bytes \n";
       buffer[header.cix_nbytes] = '\0';
       //write from buffer to file
@@ -138,12 +172,21 @@ void cix_get (client_socket& server, string filename) {
       //cout << "filename is : " << filename << endl;
       ofstream myfile;
       myfile.open(filename);
-      myfile << buffer;
+      if (header.cix_nbytes != 0)
+         myfile << buffer;
       myfile.close();
    }
 }
 
 void cix_rm (client_socket& server, string filename) { 
+   if (filename.size() > 58) {
+      cout << "The file name is too long!\n";
+      return;
+   }
+   if (filename.find_first_of("/") != string::npos) {
+      cout << "illegal filename\n";
+      return;
+   }
    cix_header header;
    header.cix_command = CIX_RM;
    //get file name
@@ -155,8 +198,17 @@ void cix_rm (client_socket& server, string filename) {
    recv_packet (server, &header, sizeof header);
    log << "received header " << header << endl;
    if (header.cix_command != CIX_ACK) {
-      log << "sent CIX_RM, server did not return CIX_ACK" << endl;
-      log << "server returned " << header << endl;
+      if (header.cix_command == CIX_NAK) {
+         char buffer[header.cix_nbytes + 1];
+         recv_packet (server, buffer, header.cix_nbytes);
+         log << "received " << header.cix_nbytes << " bytes" << endl;
+         buffer[header.cix_nbytes] = '\0';
+         cout << buffer;
+      }
+      else {
+         log << "sent CIX_RM, server did not return CIX_ACK" << endl;
+         log << "server returned " << header << endl;
+      }
    }else {
       char buffer[header.cix_nbytes + 1];
       recv_packet (server, buffer, header.cix_nbytes);

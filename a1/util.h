@@ -106,9 +106,5 @@ ostream& operator<< (ostream& out, const vector<item_t>& vec) {
    return out;
 }
 
-
-
-//void init_root_dir(inode_state &);
-
 #endif
 
